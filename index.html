@@ -3,36 +3,23 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SKVK Margin Availability v1.2</title>
+<title>SKVK Margin Availability v1.3</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.34.0/dist/tabler-icons.min.css">
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 <style>
-/* ── VARIABLES ─────────────────────────────────────────── */
-:root {
-  --bg:       #f0f2f5;
-  --bg2:      #ffffff;
-  --bg3:      #e8eaed;
-  --text:     #1a1d23;
-  --text2:    #5a6070;
-  --text3:    #9aa0ad;
-  --border:   #e2e5ea;
-  --border2:  #cdd0d7;
-  --navy:     #1e3a5f;
-  --navy2:    #0d2440;
-  --navy3:    #2a4f80;
-  --green:    #0d7a3e;
-  --green-lt: #e8f5ee;
-  --red:      #c0392b;
-  --red-lt:   #fdf0ee;
-  --blue:     #1565c0;
-  --blue-lt:  #e8f0fe;
-  --amber:    #d97706;
-  --amber-lt: #fef3c7;
-  --r:        8px;
-  --rlg:      12px;
-  --shadow:   0 2px 10px rgba(0,0,0,.07);
-  --shadow2:  0 4px 20px rgba(0,0,0,.12);
+:root{
+  --bg:#f0f2f5; --bg2:#ffffff; --bg3:#e8eaed;
+  --text:#1a1d23; --text2:#5a6070; --text3:#9aa0ad;
+  --border:#e2e5ea; --border2:#cdd0d7;
+  --navy:#1e3a5f; --navy2:#0d2440; --navy3:#2a4f80;
+  --green:#0d7a3e; --green-lt:#e8f5ee;
+  --red:#c0392b; --red-lt:#fdf0ee;
+  --blue:#1565c0; --blue-lt:#e8f0fe;
+  --amber:#d97706; --amber-lt:#fef3c7;
+  --r:8px; --rlg:12px;
+  --shadow:0 2px 10px rgba(0,0,0,.07);
+  --shadow2:0 4px 20px rgba(0,0,0,.12);
 }
 @media(prefers-color-scheme:dark){
   :root{
@@ -45,18 +32,6 @@
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,sans-serif;
   font-size:13px;color:var(--text);background:var(--bg);min-height:100vh}
-
-/* ── LOGIN ──────────────────────────────────────────────── */
-#loginScreen{display:flex;align-items:center;justify-content:center;
-  min-height:100vh;padding:20px;background:var(--bg)}
-.login-card{background:var(--bg2);border:1px solid var(--border);
-  border-radius:var(--rlg);padding:38px;max-width:380px;width:100%;
-  box-shadow:var(--shadow2);text-align:center}
-.login-icon{width:58px;height:58px;background:var(--blue-lt);border-radius:50%;
-  display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
-
-/* ── APP SHELL ──────────────────────────────────────────── */
-#app{display:none;min-height:100vh;flex-direction:column}
 
 /* TOP BAR */
 .topbar{background:var(--navy);height:50px;padding:0 20px;
@@ -82,7 +57,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,sans-seri
 .tab i{font-size:14px}
 
 /* CONTENT */
-.content{padding:18px 20px;max-width:1400px;margin:0 auto;width:100%}
+.content{padding:18px 20px;max-width:1600px;margin:0 auto;width:100%}
 
 /* BUTTONS */
 .btn{height:32px;padding:0 14px;border-radius:var(--r);
@@ -101,91 +76,91 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,sans-seri
 .btn.sm{height:26px;padding:0 10px;font-size:11px}
 .btn.lg{height:42px;padding:0 24px;font-size:13px}
 
-/* ── ENTRY TAB ──────────────────────────────────────────── */
-.entry-topbar{display:flex;align-items:center;justify-content:space-between;
-  margin-bottom:16px;flex-wrap:wrap;gap:10px}
-.entry-topbar h2{font-size:15px;font-weight:700}
-.date-row{display:flex;align-items:center;gap:8px}
-.date-row label{font-size:11px;font-weight:600;color:var(--text2)}
-.date-row input[type=date]{height:32px;padding:0 10px;border-radius:var(--r);
-  border:1px solid var(--border2);background:var(--bg2);color:var(--text);
-  font-size:12px;font-family:inherit}
-.date-row input[type=date]:focus{outline:none;border-color:var(--blue)}
+/* ── ENTRY TAB — TABLE LAYOUT ────────────────────────────── */
+.entry-hdr{display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:14px;flex-wrap:wrap;gap:10px}
+.entry-hdr h2{font-size:15px;font-weight:700}
+.entry-hdr-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+
+.last-updated{font-size:11px;color:var(--text2);
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:var(--r);padding:4px 12px;
+  display:flex;align-items:center;gap:5px}
+.last-updated i{color:var(--blue)}
 
 /* Summary strip */
-.sum-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}
+.sum-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
 .scard{background:var(--bg2);border-radius:var(--rlg);padding:14px 16px;
   border:1px solid var(--border);box-shadow:var(--shadow)}
 .scard .lbl{font-size:10px;font-weight:600;color:var(--text2);
   text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px}
-.scard .val{font-size:20px;font-weight:800}
+.scard .val{font-size:18px;font-weight:800}
 .scard .sub{font-size:10px;color:var(--text3);margin-top:2px}
 .scard.blue .val{color:var(--blue)}
 .scard.green .val{color:var(--green)}
+.scard.amber .val{color:var(--amber)}
 
-/* Account cards grid */
-.acc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));
-  gap:14px;margin-bottom:80px}
+/* Main table */
+.tbl-wrap{overflow-x:auto;border:1px solid var(--border);
+  border-radius:var(--rlg);box-shadow:var(--shadow);margin-bottom:70px}
+table{width:100%;border-collapse:collapse;min-width:900px}
+thead tr:first-child th{
+  background:var(--navy);padding:10px 12px;
+  font-size:10px;font-weight:700;color:#fff;
+  white-space:nowrap;text-align:left;
+  border-bottom:1px solid rgba(255,255,255,.1);
+  text-transform:uppercase;letter-spacing:.4px}
+thead tr:first-child th.r{text-align:right}
+thead tr:first-child th.c{text-align:center}
 
-.acc-card{background:var(--bg2);border-radius:var(--rlg);
-  border:1px solid var(--border);box-shadow:var(--shadow);
-  overflow:hidden;transition:box-shadow .2s}
-.acc-card:hover{box-shadow:var(--shadow2)}
+/* Sub-header row */
+.subhdr th{background:var(--navy2) !important;
+  font-size:9px !important;color:rgba(255,255,255,.5) !important;
+  padding:4px 12px !important;font-weight:500 !important;
+  letter-spacing:.3px !important;text-transform:uppercase !important;
+  border-bottom:2px solid var(--navy) !important}
 
-.b-zebu     {border-top:3px solid #1565c0}
-.b-shoonya  {border-top:3px solid #0d7377}
-.b-jainam   {border-top:3px solid #6d28d9}
-.b-iifl     {border-top:3px solid #d97706}
-.b-zerodha  {border-top:3px solid #387ed1}
-.b-alice    {border-top:3px solid #e91e8c}
-.b-upstox   {border-top:3px solid #f97316}
-.b-other    {border-top:3px solid #5a6070}
+tbody tr{border-bottom:1px solid var(--border);transition:background .1s}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:var(--bg3)}
+tbody tr.total-row{background:var(--navy2) !important;border-top:2px solid var(--navy)}
+tbody tr.total-row td{color:#fff !important;font-weight:700;padding:10px 12px}
+tbody tr.total-row td.val-total{color:#64b5f6 !important;font-size:14px}
 
-.acc-hdr{background:var(--navy);padding:11px 14px;
-  display:flex;align-items:center;justify-content:space-between}
-.acc-hdr-left{display:flex;flex-direction:column;gap:2px}
-.acc-nick{font-size:14px;font-weight:700;color:#fff}
-.acc-meta{font-size:10px;color:rgba(255,255,255,.5);display:flex;gap:8px}
-.broker-pill{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;
-  background:rgba(100,181,246,.18);color:#64b5f6;border:1px solid rgba(100,181,246,.25)}
+td{padding:8px 12px;font-size:12px;vertical-align:middle}
+td.r{text-align:right}
+td.c{text-align:center}
 
-.acc-body{padding:13px}
-.fields-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px}
-.fg{display:flex;flex-direction:column;gap:3px}
-.fg label{font-size:9px;font-weight:700;color:var(--text2);
-  text-transform:uppercase;letter-spacing:.3px}
-.fg input{height:34px;padding:0 8px;border-radius:7px;
-  border:1px solid var(--border2);background:var(--bg);
-  color:var(--text);font-size:12px;font-family:inherit;
-  text-align:right;transition:border-color .15s,background .15s}
-.fg input:focus{outline:none;border-color:var(--blue);background:var(--bg2)}
-.fg input.has-val{border-color:var(--green);background:var(--green-lt)}
+/* Account cell */
+.acc-cell{display:flex;flex-direction:column;gap:1px}
+.acc-name{font-weight:700;font-size:12px}
+.acc-sub{font-size:10px;color:var(--text3)}
 
-.am-bar{background:var(--navy);border-radius:8px;padding:10px 12px;
-  display:flex;align-items:center;justify-content:space-between}
-.am-lbl{font-size:10px;color:rgba(255,255,255,.55);font-weight:600;
-  display:flex;align-items:center;gap:4px}
-.am-val{font-size:15px;font-weight:800;color:#64b5f6}
+/* Editable input cells */
+.cell-input{width:100%;height:30px;padding:0 8px;
+  border-radius:6px;border:1px solid transparent;
+  background:transparent;color:var(--text);
+  font-size:12px;font-family:inherit;text-align:right;
+  transition:all .15s;cursor:pointer}
+.cell-input:hover{border-color:var(--border2);background:var(--bg2)}
+.cell-input:focus{outline:none;border-color:var(--blue);
+  background:var(--bg2);box-shadow:0 0 0 2px rgba(21,101,192,.12);cursor:text}
+.cell-input.has-val{color:var(--text)}
+.cell-input.has-val:not(:focus){border-color:transparent;background:transparent}
 
-.comp-rows{margin-top:8px;display:flex;flex-direction:column;gap:4px}
-.comp-row{display:flex;align-items:center;justify-content:space-between;
-  background:var(--bg3);border-radius:6px;padding:5px 10px;
-  border:1px solid var(--border)}
-.comp-lbl{font-size:10px;color:var(--text2);display:flex;align-items:center;gap:4px}
-.comp-pct{font-size:12px;font-weight:700}
-.cash-pct{color:var(--green)}
-.eq-pct{color:var(--amber)}
+/* Computed cells */
+.total-cell{font-weight:700;color:var(--blue);font-variant-numeric:tabular-nums}
+.cash-pct{font-weight:700;color:var(--green)}
+.eq-pct{font-weight:700;color:var(--amber)}
+.pct-bar-wrap{display:flex;align-items:center;gap:6px}
+.mini-bar{flex:1;height:5px;background:var(--bg3);border-radius:3px;overflow:hidden;min-width:40px}
+.mini-fill-cash{height:100%;background:var(--green);border-radius:3px;transition:width .3s}
+.mini-fill-eq{height:100%;background:var(--amber);border-radius:3px;transition:width .3s}
 
-.acc-footer{margin-top:8px;display:flex;flex-direction:column;gap:3px}
-.system-txt{font-size:10px;color:var(--text3);display:flex;align-items:center;gap:4px}
-.capital-row{display:flex;align-items:center;justify-content:space-between;
-  font-size:10px;color:var(--text3)}
-.util-bar{width:100%;height:4px;background:var(--bg3);border-radius:2px;
-  margin-top:4px;overflow:hidden}
-.util-fill{height:100%;border-radius:2px;transition:width .4s ease}
-.util-ok{background:var(--green)}
-.util-warn{background:var(--amber)}
-.util-danger{background:var(--red)}
+/* Date badge in table */
+.date-badge{display:inline-flex;align-items:center;gap:4px;
+  font-size:10px;color:var(--text2);background:var(--bg3);
+  border-radius:4px;padding:2px 7px;border:1px solid var(--border)}
 
 /* Save bar */
 .save-bar{position:fixed;bottom:0;left:0;right:0;background:var(--bg2);
@@ -197,24 +172,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,sans-seri
 .dot-saved{background:var(--green)}
 .dot-unsaved{background:var(--amber)}
 
-/* ── HISTORY TAB ────────────────────────────────────────── */
+/* ── HISTORY TAB ─────────────────────────────────────────── */
 .hist-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
 .hist-hdr h2{font-size:15px;font-weight:700}
-.tbl-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--rlg)}
-table{width:100%;border-collapse:collapse;min-width:680px}
-thead th{background:var(--navy);padding:9px 12px;font-size:10px;font-weight:700;
-  color:#fff;white-space:nowrap;text-align:left;
-  border-bottom:2px solid var(--navy2);text-transform:uppercase;letter-spacing:.3px}
-thead th.r{text-align:right}
-tbody tr{border-bottom:1px solid var(--border);transition:background .1s}
-tbody tr:last-child{border-bottom:none}
-tbody tr:hover{background:var(--bg3)}
-td{padding:9px 12px;font-size:12px;white-space:nowrap}
-td.r{text-align:right;font-variant-numeric:tabular-nums}
+.hist-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--rlg)}
+.hist-wrap table{min-width:700px}
 .delta{font-size:11px;font-weight:700}
 .pos{color:var(--green)}.neg{color:var(--red)}
 
-/* ── SETTINGS TAB ───────────────────────────────────────── */
+/* ── SETTINGS TAB ────────────────────────────────────────── */
 .set-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
 .set-hdr h2{font-size:15px;font-weight:700}
 .acc-list{display:flex;flex-direction:column;gap:10px;margin-bottom:20px}
@@ -228,13 +194,7 @@ td.r{text-align:right;font-variant-numeric:tabular-nums}
 .acc-item-meta{font-size:11px;color:var(--text2);display:flex;gap:10px;flex-wrap:wrap}
 .acc-item-actions{display:flex;gap:6px;flex-shrink:0}
 
-.pw-section{background:var(--bg2);border:1px solid var(--border);
-  border-radius:var(--rlg);padding:18px;margin-top:6px}
-.pw-section h3{font-size:13px;font-weight:700;margin-bottom:12px;
-  display:flex;align-items:center;gap:6px}
-.pw-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-
-/* ── MODAL ──────────────────────────────────────────────── */
+/* ── MODAL ───────────────────────────────────────────────── */
 .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);
   display:none;align-items:center;justify-content:center;z-index:200;padding:16px}
 .modal-bg.open{display:flex}
@@ -253,7 +213,13 @@ td.r{text-align:right;font-variant-numeric:tabular-nums}
 .mfooter{display:flex;justify-content:flex-end;gap:8px;
   margin-top:16px;padding-top:14px;border-top:1px solid var(--border)}
 
-/* ── TOAST ──────────────────────────────────────────────── */
+/* ── DATE PICKER MODAL ───────────────────────────────────── */
+.date-input{height:32px;padding:0 10px;border-radius:var(--r);
+  border:1px solid var(--border2);background:var(--bg2);color:var(--text);
+  font-size:12px;font-family:inherit}
+.date-input:focus{outline:none;border-color:var(--blue)}
+
+/* TOAST */
 .toast{position:fixed;bottom:62px;right:20px;padding:10px 16px;
   border-radius:var(--r);font-size:12px;font-weight:500;
   z-index:500;box-shadow:var(--shadow2);color:#fff;
@@ -268,17 +234,15 @@ td.r{text-align:right;font-variant-numeric:tabular-nums}
 .empty h3{font-size:14px;font-weight:600;margin-bottom:5px;color:var(--text)}
 .empty p{font-size:12px;line-height:1.6}
 
-@media(max-width:640px){
+@media(max-width:768px){
+  .sum-strip{grid-template-columns:1fr 1fr}
+}
+@media(max-width:480px){
   .sum-strip{grid-template-columns:1fr}
-  .acc-grid{grid-template-columns:1fr}
-  .fields-row{grid-template-columns:1fr}
-  .pw-grid{grid-template-columns:1fr}
 }
 </style>
 </head>
 <body>
-
-<!-- v1.1 — No password, direct access -->
 
 <!-- ── MAIN APP ───────────────────────────────────────────── -->
 <div id="app">
@@ -287,20 +251,16 @@ td.r{text-align:right;font-variant-numeric:tabular-nums}
     <div class="brand">
       <i class="ti ti-chart-candle" style="font-size:18px"></i>
       SKVK <span class="accent">Margin Availability</span>
-      <span class="vbadge">v1.2</span>
+      <span class="vbadge">v1.3</span>
     </div>
     <div class="topbar-right">
       <span class="topbar-date" id="topDate"></span>
-      <button class="btn sm" onclick="doLogout()"
-        style="background:rgba(255,255,255,.1);color:#fff;border-color:rgba(255,255,255,.15)">
-        <i class="ti ti-logout"></i>
-      </button>
     </div>
   </div>
 
   <div class="tabs">
     <div class="tab active" id="tab-entry"    onclick="goTab('entry')">
-      <i class="ti ti-pencil"></i> Daily Entry
+      <i class="ti ti-table"></i> Daily Entry
     </div>
     <div class="tab"        id="tab-history"  onclick="goTab('history')">
       <i class="ti ti-history"></i> History
@@ -310,20 +270,25 @@ td.r{text-align:right;font-variant-numeric:tabular-nums}
     </div>
   </div>
 
-  <!-- ══ ENTRY ══════════════════════════════════════════════ -->
+  <!-- ══ ENTRY PANEL ══════════════════════════════════════════ -->
   <div id="panel-entry" class="content">
 
-    <div class="entry-topbar">
+    <div class="entry-hdr">
       <h2>Daily Margin Entry</h2>
-      <div class="date-row">
-        <label>DATE</label>
-        <input type="date" id="entryDate" onchange="loadDate()">
-        <button class="btn sm navy" onclick="loadDate()">
-          <i class="ti ti-refresh"></i>
-        </button>
+      <div class="entry-hdr-right">
+        <div class="last-updated">
+          <i class="ti ti-clock"></i>
+          <span id="lastUpdatedTxt">Loading latest…</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px">
+          <label style="font-size:11px;font-weight:600;color:var(--text2)">DATE</label>
+          <input type="date" class="date-input" id="entryDate" onchange="loadDate()">
+          <button class="btn sm navy" onclick="loadDate()"><i class="ti ti-refresh"></i></button>
+        </div>
       </div>
     </div>
 
+    <!-- Summary -->
     <div class="sum-strip">
       <div class="scard blue">
         <div class="lbl">Total Available Margin</div>
@@ -331,33 +296,54 @@ td.r{text-align:right;font-variant-numeric:tabular-nums}
         <div class="sub" id="sAMsub">—</div>
       </div>
       <div class="scard">
-        <div class="lbl">Total Collateral</div>
+        <div class="lbl">Total Collateral Equity</div>
         <div class="val" id="sCol">₹ —</div>
-        <div class="sub">Equity + Liquid</div>
+        <div class="sub">Non-cash component</div>
       </div>
       <div class="scard green">
-        <div class="lbl">Total Cash Balance</div>
+        <div class="lbl">Total Cash + Liquid</div>
         <div class="val" id="sCash">₹ —</div>
-        <div class="sub">across all accounts</div>
+        <div class="sub">Cash component</div>
+      </div>
+      <div class="scard amber">
+        <div class="lbl">Overall Cash %</div>
+        <div class="val" id="sCashPct">— %</div>
+        <div class="sub">of total margin</div>
       </div>
     </div>
 
-    <div class="acc-grid" id="accGrid">
-      <div class="empty" style="grid-column:1/-1">
-        <i class="ti ti-building-bank"></i>
-        <h3>No accounts configured</h3>
-        <p>Go to <strong>Settings</strong> tab to add broker accounts first.</p>
-      </div>
+    <!-- Main Table -->
+    <div class="tbl-wrap">
+      <table id="entryTable">
+        <thead>
+          <tr>
+            <th style="width:160px">Account</th>
+            <th class="r" style="width:140px">Cash Balance</th>
+            <th class="r" style="width:140px">Collateral Liquid</th>
+            <th class="r" style="width:140px">Collateral Equity</th>
+            <th class="r" style="width:150px">Total Margin</th>
+            <th class="c" style="width:160px">Cash Component %</th>
+            <th class="c" style="width:160px">Non-Cash Component %</th>
+            <th style="width:110px">Last Updated</th>
+          </tr>
+        </thead>
+        <tbody id="entryBody">
+          <tr><td colspan="8" style="text-align:center;padding:40px;color:var(--text2)">
+            <i class="ti ti-refresh spin"></i> Loading…
+          </td></tr>
+        </tbody>
+      </table>
     </div>
 
+    <!-- Save bar -->
     <div class="save-bar">
       <div class="save-status">
         <span class="dot dot-unsaved" id="statusDot"></span>
-        <span id="statusTxt">Unsaved</span>
+        <span id="statusTxt">Unsaved changes</span>
       </div>
       <div style="display:flex;gap:8px">
-        <button class="btn" onclick="clearDay()">
-          <i class="ti ti-eraser"></i> Clear
+        <button class="btn" onclick="loadLatest()">
+          <i class="ti ti-clock"></i> Load Latest
         </button>
         <button class="btn primary" id="saveBtn" onclick="saveDay()">
           <i class="ti ti-device-floppy"></i> Save Entry
@@ -366,23 +352,21 @@ td.r{text-align:right;font-variant-numeric:tabular-nums}
     </div>
   </div>
 
-  <!-- ══ HISTORY ════════════════════════════════════════════ -->
+  <!-- ══ HISTORY PANEL ════════════════════════════════════════ -->
   <div id="panel-history" class="content" style="display:none">
     <div class="hist-hdr">
       <h2>Entry History</h2>
-      <button class="btn" onclick="loadHistory()">
-        <i class="ti ti-refresh"></i> Refresh
-      </button>
+      <button class="btn" onclick="loadHistory()"><i class="ti ti-refresh"></i> Refresh</button>
     </div>
-    <div class="tbl-wrap">
+    <div class="hist-wrap">
       <table>
         <thead>
           <tr>
             <th>Date</th>
             <th>Accounts</th>
-            <th class="r">Cash Total</th>
-            <th class="r">Collateral Total</th>
-            <th class="r">Available Margin</th>
+            <th class="r">Cash + Liquid</th>
+            <th class="r">Collateral Equity</th>
+            <th class="r">Total Margin</th>
             <th class="r">Day Change</th>
             <th>Saved At</th>
           </tr>
@@ -395,7 +379,7 @@ td.r{text-align:right;font-variant-numeric:tabular-nums}
     </div>
   </div>
 
-  <!-- ══ SETTINGS ══════════════════════════════════════════ -->
+  <!-- ══ SETTINGS PANEL ═══════════════════════════════════════ -->
   <div id="panel-settings" class="content" style="display:none">
     <div class="set-hdr">
       <h2>Account Settings</h2>
@@ -403,7 +387,6 @@ td.r{text-align:right;font-variant-numeric:tabular-nums}
         <i class="ti ti-plus"></i> Add Account
       </button>
     </div>
-
     <div class="acc-list" id="accList">
       <div class="empty">
         <i class="ti ti-building-bank"></i>
@@ -411,12 +394,11 @@ td.r{text-align:right;font-variant-numeric:tabular-nums}
         <p>Add your broker accounts to start tracking.</p>
       </div>
     </div>
-
   </div>
 
 </div><!-- /app -->
 
-<!-- ══ ACCOUNT MODAL ══════════════════════════════════════ -->
+<!-- ══ ACCOUNT MODAL ════════════════════════════════════════ -->
 <div class="modal-bg" id="modalBg">
   <div class="modal">
     <h3 id="modalTitle">Add Account</h3>
@@ -449,8 +431,7 @@ td.r{text-align:right;font-variant-numeric:tabular-nums}
       </div>
       <div class="mf full">
         <label>System Configured</label>
-        <input type="text" id="m_system"
-          placeholder="e.g. Silver M — Ravi Platform — ZEBU">
+        <input type="text" id="m_system" placeholder="e.g. Silver M — Ravi Platform — ZEBU">
       </div>
     </div>
     <div class="mfooter">
@@ -478,41 +459,34 @@ var FIREBASE_CONFIG = {
 
 // ══ GLOBALS ══════════════════════════════════════════════════
 var db;
-var accounts   = {};
-var dayEntries = {};
+var accounts   = {};   // { id: { broker, clientId, nickname, capital, system } }
+var dayEntries = {};   // { accountId: { cash, collateralEquity, collateralLiquid } }
 var editId     = null;
+var currentDate = '';
 
-// ══ BOOT — v1.1 No Password ═══════════════════════════════════
+// ══ BOOT ═════════════════════════════════════════════════════
 (function boot(){
-  try {
-    firebase.initializeApp(FIREBASE_CONFIG);
-  } catch(e){ /* already init */ }
+  try { firebase.initializeApp(FIREBASE_CONFIG); } catch(e){}
   db = firebase.database();
-  startApp();
-})();
 
-function doLogout(){ location.reload(); }
-
-// ══ APP START ═════════════════════════════════════════════════
-function startApp(){
-  document.getElementById('app').style.display = 'flex';
-  document.getElementById('app').style.flexDirection = 'column';
-
-  var today = new Date().toISOString().slice(0,10);
-  document.getElementById('entryDate').value = today;
   document.getElementById('topDate').textContent =
     new Date().toLocaleDateString('en-IN',{
       weekday:'short', day:'2-digit', month:'short', year:'numeric'
     });
 
+  // Set today as default date
+  var today = new Date().toISOString().slice(0,10);
+  document.getElementById('entryDate').value = today;
+  currentDate = today;
+
+  // Subscribe to accounts
   db.ref('margin/accounts').on('value', snap => {
     accounts = snap.val() || {};
-    renderGrid();
+    // After accounts load, load latest data
+    loadLatest();
     renderAccList();
   });
-
-  loadDate();
-}
+})();
 
 // ══ TABS ══════════════════════════════════════════════════════
 function goTab(t){
@@ -524,114 +498,162 @@ function goTab(t){
   if(t==='settings') renderAccList();
 }
 
-// ══ BROKER ACCENT ════════════════════════════════════════════
-function bClass(broker){
-  var b = (broker||'').toLowerCase();
-  if(b.includes('zebu'))                       return 'b-zebu';
-  if(b.includes('shoonya')||b.includes('finvasia')) return 'b-shoonya';
-  if(b.includes('jainam'))                     return 'b-jainam';
-  if(b.includes('iifl'))                       return 'b-iifl';
-  if(b.includes('zerodha'))                    return 'b-zerodha';
-  if(b.includes('alice'))                      return 'b-alice';
-  if(b.includes('upstox'))                     return 'b-upstox';
-  return 'b-other';
+// ══ LOAD LATEST ═══════════════════════════════════════════════
+async function loadLatest(){
+  try {
+    // Get the most recent entry from Firebase
+    var snap = await db.ref('margin/daily').orderByKey().limitToLast(1).once('value');
+    var raw  = snap.val();
+    if(raw){
+      var latestKey  = Object.keys(raw)[0];
+      var latestData = raw[latestKey];
+      dayEntries  = latestData.entries || {};
+      currentDate = latestData.date;
+      document.getElementById('entryDate').value = currentDate;
+      var savedAt = latestData.savedAt
+        ? new Date(latestData.savedAt).toLocaleString('en-IN',{
+            day:'2-digit', month:'short', year:'numeric',
+            hour:'2-digit', minute:'2-digit'
+          })
+        : fmtDate(currentDate);
+      document.getElementById('lastUpdatedTxt').textContent = 'Last saved: ' + savedAt;
+      markSaved('Showing latest entry — ' + fmtDate(currentDate));
+    } else {
+      dayEntries = {};
+      document.getElementById('lastUpdatedTxt').textContent = 'No entries yet';
+      markUnsaved();
+    }
+    renderTable();
+  } catch(e){ toast('Load error: '+e.message, true); }
 }
 
-// ══ RENDER ENTRY CARDS ════════════════════════════════════════
-function renderGrid(){
-  var g    = document.getElementById('accGrid');
+// ══ LOAD SPECIFIC DATE ════════════════════════════════════════
+async function loadDate(){
+  var date = document.getElementById('entryDate').value;
+  if(!date) return;
+  currentDate = date;
+  try {
+    var snap = await db.ref('margin/daily/'+date.replace(/-/g,'')).once('value');
+    var d    = snap.val();
+    dayEntries = (d && d.entries) ? d.entries : {};
+    renderTable();
+    if(d){
+      var savedAt = d.savedAt
+        ? new Date(d.savedAt).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})
+        : '';
+      document.getElementById('lastUpdatedTxt').textContent =
+        'Loaded: ' + fmtDate(date) + (savedAt ? ' at ' + savedAt : '');
+      markSaved('Loaded — ' + fmtDate(date));
+    } else {
+      document.getElementById('lastUpdatedTxt').textContent = 'No data for ' + fmtDate(date);
+      markUnsaved();
+    }
+  } catch(e){ toast('Load error: '+e.message, true); }
+}
+
+// ══ RENDER TABLE ══════════════════════════════════════════════
+function renderTable(){
+  var tb   = document.getElementById('entryBody');
   var list = Object.entries(accounts);
 
   if(!list.length){
-    g.innerHTML = `<div class="empty" style="grid-column:1/-1">
-      <i class="ti ti-building-bank"></i>
-      <h3>No accounts configured</h3>
-      <p>Go to <strong>Settings</strong> tab to add broker accounts first.</p>
-    </div>`;
+    tb.innerHTML = `<tr><td colspan="8">
+      <div class="empty">
+        <i class="ti ti-building-bank"></i>
+        <h3>No accounts configured</h3>
+        <p>Go to <strong>Settings</strong> to add broker accounts first.</p>
+      </div></td></tr>`;
     updateSummary();
     return;
   }
 
-  g.innerHTML = list.map(([id, a]) => {
+  var rows = list.map(([id, a]) => {
     var e    = dayEntries[id] || {};
-    var cash = e.cash              !== undefined ? e.cash              : '';
-    var ce   = e.collateralEquity  !== undefined ? e.collateralEquity  : '';
-    var cl   = e.collateralLiquid  !== undefined ? e.collateralLiquid  : '';
-    var am   = (parseFloat(cash)||0) + (parseFloat(ce)||0) + (parseFloat(cl)||0);
-    var plan = parseFloat(a.capital) || 0;
-    var pct  = plan > 0 ? Math.min(100, (am/plan)*100) : 0;
-    var uCls = pct > 90 ? 'util-danger' : pct > 70 ? 'util-warn' : 'util-ok';
+    var cash = e.cash             !== undefined ? e.cash             : '';
+    var ce   = e.collateralEquity !== undefined ? e.collateralEquity : '';
+    var cl   = e.collateralLiquid !== undefined ? e.collateralLiquid : '';
 
-    var cashComp = am > 0 ? (((parseFloat(cash)||0) + (parseFloat(cl)||0)) / am * 100) : 0;
-    var equComp  = am > 0 ? ((parseFloat(ce)||0) / am * 100) : 0;
+    var cashN = parseFloat(cash) || 0;
+    var ceN   = parseFloat(ce)   || 0;
+    var clN   = parseFloat(cl)   || 0;
+    var am    = cashN + ceN + clN;
 
-    return `<div class="acc-card ${bClass(a.broker)}">
-      <div class="acc-hdr">
-        <div class="acc-hdr-left">
-          <div class="acc-nick">${esc(a.nickname||'Account')}</div>
-          <div class="acc-meta">
-            <span>${esc(a.broker||'')}</span>
-            ${a.clientId ? `<span>${esc(a.clientId)}</span>` : ''}
-          </div>
+    var cashComp = am > 0 ? ((cashN + clN) / am * 100) : 0;
+    var eqComp   = am > 0 ? (ceN / am * 100) : 0;
+
+    var lastSaved = e.savedAt
+      ? new Date(e.savedAt).toLocaleDateString('en-IN',{day:'2-digit',month:'short'})
+      : (am > 0 ? fmtDate(currentDate) : '—');
+
+    return `<tr>
+      <td>
+        <div class="acc-cell">
+          <div class="acc-name">${esc(a.broker||'')} — ${esc(a.nickname||'')}</div>
+          <div class="acc-sub">${esc(a.clientId||'')}${a.system?` · ${esc(a.system.slice(0,25))}`:''}</div>
         </div>
-        <span class="broker-pill">${esc((a.broker||'').slice(0,7))}</span>
-      </div>
-      <div class="acc-body">
-        <div class="fields-row">
-          <div class="fg">
-            <label>Cash Bal.</label>
-            <input type="number" id="f_cash_${id}"
-              value="${cash}" placeholder="0.00"
-              class="${cash!=='' ? 'has-val' : ''}"
-              oninput="onInput('${id}','cash',this.value,this)">
-          </div>
-          <div class="fg">
-            <label>Col. Equity</label>
-            <input type="number" id="f_ce_${id}"
-              value="${ce}" placeholder="0.00"
-              class="${ce!=='' ? 'has-val' : ''}"
-              oninput="onInput('${id}','collateralEquity',this.value,this)">
-          </div>
-          <div class="fg">
-            <label>Col. Liquid</label>
-            <input type="number" id="f_cl_${id}"
-              value="${cl}" placeholder="0.00"
-              class="${cl!=='' ? 'has-val' : ''}"
-              oninput="onInput('${id}','collateralLiquid',this.value,this)">
-          </div>
-        </div>
-        <div class="am-bar">
-          <span class="am-lbl"><i class="ti ti-wallet"></i> Available Margin</span>
-          <span class="am-val" id="am_${id}">${am > 0 ? inr(am) : '—'}</span>
-        </div>
-        <div class="comp-rows" id="comp_${id}">
+      </td>
+      <td class="r">
+        <input type="number" class="cell-input ${cash!==''?'has-val':''}"
+          id="f_cash_${id}" value="${cash}" placeholder="—"
+          oninput="onInput('${id}','cash',this.value,this)">
+      </td>
+      <td class="r">
+        <input type="number" class="cell-input ${cl!==''?'has-val':''}"
+          id="f_cl_${id}" value="${cl}" placeholder="—"
+          oninput="onInput('${id}','collateralLiquid',this.value,this)">
+      </td>
+      <td class="r">
+        <input type="number" class="cell-input ${ce!==''?'has-val':''}"
+          id="f_ce_${id}" value="${ce}" placeholder="—"
+          oninput="onInput('${id}','collateralEquity',this.value,this)">
+      </td>
+      <td class="r">
+        <span class="total-cell" id="am_${id}">${am > 0 ? inr(am) : '—'}</span>
+      </td>
+      <td class="c">
+        <div class="pct-bar-wrap" id="cashcomp_${id}">
           ${am > 0 ? `
-          <div class="comp-row">
-            <span class="comp-lbl"><i class="ti ti-droplet" style="color:var(--green)"></i> Cash Component <span style="font-size:9px;color:var(--text3)">(Cash + Col.Liquid)</span></span>
-            <span class="comp-pct cash-pct">${cashComp.toFixed(1)}%</span>
-          </div>
-          <div class="comp-row">
-            <span class="comp-lbl"><i class="ti ti-chart-bar" style="color:var(--amber)"></i> Equity Component <span style="font-size:9px;color:var(--text3)">(Col.Equity)</span></span>
-            <span class="comp-pct eq-pct">${equComp.toFixed(1)}%</span>
-          </div>` : ''}
+          <div class="mini-bar"><div class="mini-fill-cash" style="width:${cashComp}%"></div></div>
+          <span class="cash-pct">${cashComp.toFixed(1)}%</span>` : '<span style="color:var(--text3)">—</span>'}
         </div>
-        <div class="acc-footer">
-          ${a.system ? `<div class="system-txt"><i class="ti ti-cpu"></i>${esc(a.system)}</div>` : ''}
-          ${plan ? `
-          <div class="capital-row">
-            <span>Planned: ${inr(plan)}</span>
-            <span style="color:${pct>90?'var(--red)':pct>70?'var(--amber)':'var(--green)'}">
-              ${pct.toFixed(0)}% utilised
-            </span>
-          </div>
-          <div class="util-bar">
-            <div class="util-fill ${uCls}" style="width:${pct}%"></div>
-          </div>` : ''}
+      </td>
+      <td class="c">
+        <div class="pct-bar-wrap" id="eqcomp_${id}">
+          ${am > 0 ? `
+          <div class="mini-bar"><div class="mini-fill-eq" style="width:${eqComp}%"></div></div>
+          <span class="eq-pct">${eqComp.toFixed(1)}%</span>` : '<span style="color:var(--text3)">—</span>'}
         </div>
-      </div>
-    </div>`;
+      </td>
+      <td>
+        <span class="date-badge"><i class="ti ti-calendar" style="font-size:9px"></i>${lastSaved}</span>
+      </td>
+    </tr>`;
   }).join('');
 
+  // Total row
+  var totCash=0, totCE=0, totCL=0, totAM=0;
+  list.forEach(([id])=>{
+    var e = dayEntries[id]||{};
+    totCash += parseFloat(e.cash)||0;
+    totCE   += parseFloat(e.collateralEquity)||0;
+    totCL   += parseFloat(e.collateralLiquid)||0;
+  });
+  totAM = totCash + totCE + totCL;
+  var totCashPct = totAM > 0 ? ((totCash+totCL)/totAM*100).toFixed(1) : '—';
+  var totEqPct   = totAM > 0 ? (totCE/totAM*100).toFixed(1) : '—';
+
+  rows += `<tr class="total-row">
+    <td><strong>TOTAL</strong></td>
+    <td class="r">${inr(totCash)}</td>
+    <td class="r">${inr(totCL)}</td>
+    <td class="r">${inr(totCE)}</td>
+    <td class="r val-total">${inr(totAM)}</td>
+    <td class="c"><span style="color:#81c784;font-weight:700">${totCashPct}%</span></td>
+    <td class="c"><span style="color:#ffb74d;font-weight:700">${totEqPct}%</span></td>
+    <td></td>
+  </tr>`;
+
+  tb.innerHTML = rows;
   updateSummary();
 }
 
@@ -647,62 +669,85 @@ function onInput(id, field, val, el){
   var cl   = parseFloat(e.collateralLiquid) || 0;
   var am   = cash + ce + cl;
 
+  // Update total cell
   var amEl = document.getElementById('am_'+id);
   if(amEl) amEl.textContent = am > 0 ? inr(am) : '—';
 
-  // Update percentage rows
-  var compEl = document.getElementById('comp_'+id);
-  if(compEl){
-    if(am > 0){
-      var cashComp = ((cash + cl) / am * 100).toFixed(1);
-      var equComp  = (ce / am * 100).toFixed(1);
-      compEl.innerHTML = `
-        <div class="comp-row">
-          <span class="comp-lbl"><i class="ti ti-droplet" style="color:var(--green)"></i> Cash Component <span style="font-size:9px;color:var(--text3)">(Cash + Col.Liquid)</span></span>
-          <span class="comp-pct cash-pct">${cashComp}%</span>
-        </div>
-        <div class="comp-row">
-          <span class="comp-lbl"><i class="ti ti-chart-bar" style="color:var(--amber)"></i> Equity Component <span style="font-size:9px;color:var(--text3)">(Col.Equity)</span></span>
-          <span class="comp-pct eq-pct">${equComp}%</span>
-        </div>`;
-    } else {
-      compEl.innerHTML = '';
-    }
-  }
+  // Update Cash % cell
+  var cashComp = am > 0 ? ((cash+cl)/am*100) : 0;
+  var eqComp   = am > 0 ? (ce/am*100) : 0;
+  var ccEl = document.getElementById('cashcomp_'+id);
+  var ecEl = document.getElementById('eqcomp_'+id);
+  if(ccEl) ccEl.innerHTML = am > 0
+    ? `<div class="mini-bar"><div class="mini-fill-cash" style="width:${cashComp}%"></div></div>
+       <span class="cash-pct">${cashComp.toFixed(1)}%</span>`
+    : '<span style="color:var(--text3)">—</span>';
+  if(ecEl) ecEl.innerHTML = am > 0
+    ? `<div class="mini-bar"><div class="mini-fill-eq" style="width:${eqComp}%"></div></div>
+       <span class="eq-pct">${eqComp.toFixed(1)}%</span>`
+    : '<span style="color:var(--text3)">—</span>';
 
   updateSummary();
   markUnsaved();
+
+  // Also refresh total row
+  refreshTotalRow();
+}
+
+function refreshTotalRow(){
+  var list = Object.entries(accounts);
+  var totCash=0,totCE=0,totCL=0,totAM=0;
+  list.forEach(([id])=>{
+    var e=dayEntries[id]||{};
+    totCash+=parseFloat(e.cash)||0;
+    totCE  +=parseFloat(e.collateralEquity)||0;
+    totCL  +=parseFloat(e.collateralLiquid)||0;
+  });
+  totAM=totCash+totCE+totCL;
+  var totCashPct = totAM>0?((totCash+totCL)/totAM*100).toFixed(1):'—';
+  var totEqPct   = totAM>0?(totCE/totAM*100).toFixed(1):'—';
+  var tbody = document.getElementById('entryBody');
+  if(!tbody) return;
+  var totalRow = tbody.querySelector('tr.total-row');
+  if(totalRow){
+    totalRow.cells[1].textContent = inr(totCash);
+    totalRow.cells[2].textContent = inr(totCL);
+    totalRow.cells[3].textContent = inr(totCE);
+    totalRow.cells[4].innerHTML   = `<span style="color:#64b5f6;font-size:14px;font-weight:700">${inr(totAM)}</span>`;
+    totalRow.cells[5].innerHTML   = `<span style="color:#81c784;font-weight:700">${totCashPct}%</span>`;
+    totalRow.cells[6].innerHTML   = `<span style="color:#ffb74d;font-weight:700">${totEqPct}%</span>`;
+  }
 }
 
 function updateSummary(){
-  var totAM = 0, totCol = 0, totCash = 0;
-  Object.values(dayEntries).forEach(e => {
-    totCash += parseFloat(e.cash)             || 0;
-    totCol  += (parseFloat(e.collateralEquity)||0) + (parseFloat(e.collateralLiquid)||0);
-    totAM   += (parseFloat(e.cash)||0)
-             + (parseFloat(e.collateralEquity)||0)
-             + (parseFloat(e.collateralLiquid)||0);
+  var list=Object.entries(accounts);
+  var totCash=0,totCE=0,totCL=0,totAM=0;
+  list.forEach(([id])=>{
+    var e=dayEntries[id]||{};
+    totCash+=parseFloat(e.cash)||0;
+    totCE  +=parseFloat(e.collateralEquity)||0;
+    totCL  +=parseFloat(e.collateralLiquid)||0;
   });
-  document.getElementById('sAM').textContent   = inr(totAM);
-  document.getElementById('sCol').textContent  = inr(totCol);
-  document.getElementById('sCash').textContent = inr(totCash);
-  var n = Object.keys(accounts).length;
-  document.getElementById('sAMsub').textContent = n + ' account' + (n!==1?'s':'') + ' configured';
+  totAM=totCash+totCE+totCL;
+  var cashPct = totAM>0?((totCash+totCL)/totAM*100).toFixed(1):'—';
+  document.getElementById('sAM').textContent      = inr(totAM);
+  document.getElementById('sCol').textContent     = inr(totCE);
+  document.getElementById('sCash').textContent    = inr(totCash+totCL);
+  document.getElementById('sCashPct').textContent = cashPct + (cashPct!=='—'?'%':'');
+  document.getElementById('sAMsub').textContent   =
+    list.length + ' account' + (list.length!==1?'s':'') + ' configured';
 }
 
 function markUnsaved(){
   document.getElementById('statusDot').className  = 'dot dot-unsaved';
   document.getElementById('statusTxt').textContent = 'Unsaved changes';
 }
-
-function clearDay(){
-  if(!confirm('Clear all values for this date?')) return;
-  dayEntries = {};
-  renderGrid();
-  markUnsaved();
+function markSaved(msg){
+  document.getElementById('statusDot').className  = 'dot dot-saved';
+  document.getElementById('statusTxt').textContent = msg || 'Saved';
 }
 
-// ══ SAVE / LOAD ═══════════════════════════════════════════════
+// ══ SAVE ══════════════════════════════════════════════════════
 async function saveDay(){
   var date = document.getElementById('entryDate').value;
   if(!date){ toast('Select a date', true); return; }
@@ -711,50 +756,30 @@ async function saveDay(){
   btn.disabled = true;
   btn.innerHTML = '<i class="ti ti-refresh spin"></i> Saving…';
 
-  var totAM = 0, totCol = 0, totCash = 0;
-  Object.values(dayEntries).forEach(e => {
-    totCash += parseFloat(e.cash)              || 0;
-    totCol  += (parseFloat(e.collateralEquity)||0) + (parseFloat(e.collateralLiquid)||0);
-    totAM   += (parseFloat(e.cash)||0)
-             + (parseFloat(e.collateralEquity)||0)
-             + (parseFloat(e.collateralLiquid)||0);
+  var totCash=0,totCE=0,totCL=0,totAM=0;
+  Object.values(dayEntries).forEach(e=>{
+    totCash+=parseFloat(e.cash)||0;
+    totCE  +=parseFloat(e.collateralEquity)||0;
+    totCL  +=parseFloat(e.collateralLiquid)||0;
   });
+  totAM=totCash+totCE+totCL;
 
   var payload = {
-    date,
-    entries: dayEntries,
-    totals:  { cash: totCash, collateral: totCol, available: totAM },
+    date, entries: dayEntries,
+    totals:{ cash:totCash, collateral:totCE, collateralLiquid:totCL, available:totAM },
     savedAt: Date.now()
   };
 
   try {
-    await db.ref('margin/daily/' + date.replace(/-/g,'')).set(payload);
-    document.getElementById('statusDot').className  = 'dot dot-saved';
-    document.getElementById('statusTxt').textContent =
-      'Saved at ' + new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
-    toast('Entry saved for ' + fmtDate(date) + ' ✓');
-  } catch(e){ toast('Save failed: ' + e.message, true); }
+    await db.ref('margin/daily/'+date.replace(/-/g,'')).set(payload);
+    var tStr = new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+    document.getElementById('lastUpdatedTxt').textContent = 'Saved: '+fmtDate(date)+' at '+tStr;
+    markSaved('Saved at '+tStr);
+    toast('Entry saved for '+fmtDate(date)+' ✓');
+  } catch(e){ toast('Save failed: '+e.message, true); }
 
   btn.disabled = false;
   btn.innerHTML = '<i class="ti ti-device-floppy"></i> Save Entry';
-}
-
-async function loadDate(){
-  var date = document.getElementById('entryDate').value;
-  if(!date) return;
-  try {
-    var snap = await db.ref('margin/daily/' + date.replace(/-/g,'')).once('value');
-    var d    = snap.val();
-    dayEntries = (d && d.entries) ? d.entries : {};
-    renderGrid();
-    if(d){
-      document.getElementById('statusDot').className  = 'dot dot-saved';
-      document.getElementById('statusTxt').textContent = 'Loaded — ' + fmtDate(date);
-      toast('Loaded entry for ' + fmtDate(date));
-    } else {
-      markUnsaved();
-    }
-  } catch(e){ toast('Load error: ' + e.message, true); }
 }
 
 // ══ HISTORY ═══════════════════════════════════════════════════
@@ -764,24 +789,28 @@ async function loadHistory(){
   try {
     var snap = await db.ref('margin/daily').orderByKey().limitToLast(30).once('value');
     var raw  = snap.val() || {};
-    var rows = Object.values(raw).sort((a,b) => b.date.localeCompare(a.date));
+    var rows = Object.values(raw).sort((a,b)=>b.date.localeCompare(a.date));
     if(!rows.length){
-      tb.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--text2)">No entries yet.</td></tr>';
+      tb.innerHTML='<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--text2)">No entries yet.</td></tr>';
       return;
     }
-    tb.innerHTML = rows.map((r, i) => {
+    tb.innerHTML = rows.map((r,i)=>{
       var prev  = rows[i+1];
       var delta = prev ? r.totals.available - prev.totals.available : null;
-      var dTxt  = delta !== null
+      var dTxt  = delta!==null
         ? `<span class="delta ${delta>=0?'pos':'neg'}">${delta>=0?'+':''}${inr(delta)}</span>`
         : '—';
-      var tStr  = r.savedAt
+      var tStr = r.savedAt
         ? new Date(r.savedAt).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})
         : '—';
+      var cashLiq = (r.totals.cash||0) + (r.totals.collateralLiquid||0);
       return `<tr>
-        <td><strong>${fmtDate(r.date)}</strong></td>
+        <td><strong>${fmtDate(r.date)}</strong>
+          <span style="cursor:pointer;color:var(--blue);margin-left:6px;font-size:11px"
+            onclick="jumpToDate('${r.date}')"><i class="ti ti-edit"></i></span>
+        </td>
         <td>${Object.keys(r.entries||{}).length}</td>
-        <td class="r">${inr(r.totals.cash||0)}</td>
+        <td class="r">${inr(cashLiq)}</td>
         <td class="r">${inr(r.totals.collateral||0)}</td>
         <td class="r" style="font-weight:700;color:var(--blue)">${inr(r.totals.available||0)}</td>
         <td class="r">${dTxt}</td>
@@ -789,32 +818,37 @@ async function loadHistory(){
       </tr>`;
     }).join('');
   } catch(e){
-    tb.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--red)">Error: ${e.message}</td></tr>`;
+    tb.innerHTML=`<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--red)">Error: ${e.message}</td></tr>`;
   }
 }
 
-// ══ SETTINGS — ACCOUNTS ═══════════════════════════════════════
+function jumpToDate(date){
+  document.getElementById('entryDate').value = date;
+  goTab('entry');
+  loadDate();
+}
+
+// ══ SETTINGS ══════════════════════════════════════════════════
 function renderAccList(){
   var el   = document.getElementById('accList');
   var list = Object.entries(accounts);
   if(!list.length){
-    el.innerHTML = `<div class="empty">
+    el.innerHTML=`<div class="empty">
       <i class="ti ti-building-bank"></i>
       <h3>No accounts yet</h3>
-      <p>Add your broker accounts to start tracking.</p>
-    </div>`;
+      <p>Add your broker accounts to start tracking.</p></div>`;
     return;
   }
-  el.innerHTML = list.map(([id, a]) => `
+  el.innerHTML = list.map(([id,a])=>`
     <div class="acc-item">
       <div class="acc-item-icon"><i class="ti ti-building-bank"></i></div>
       <div class="acc-item-info">
         <div class="acc-item-name">${esc(a.nickname||'Account')}</div>
         <div class="acc-item-meta">
           <span><i class="ti ti-briefcase" style="font-size:10px"></i> ${esc(a.broker||'—')}</span>
-          ${a.clientId ? `<span><i class="ti ti-fingerprint" style="font-size:10px"></i> ${esc(a.clientId)}</span>` : ''}
-          ${a.capital  ? `<span><i class="ti ti-currency-rupee" style="font-size:10px"></i> ${inr(a.capital)}</span>` : ''}
-          ${a.system   ? `<span><i class="ti ti-cpu" style="font-size:10px"></i> ${esc(a.system.length>35?a.system.slice(0,35)+'…':a.system)}</span>` : ''}
+          ${a.clientId?`<span><i class="ti ti-fingerprint" style="font-size:10px"></i> ${esc(a.clientId)}</span>`:''}
+          ${a.capital ?`<span><i class="ti ti-currency-rupee" style="font-size:10px"></i> ${inr(a.capital)}</span>`:''}
+          ${a.system  ?`<span><i class="ti ti-cpu" style="font-size:10px"></i> ${esc(a.system.length>35?a.system.slice(0,35)+'…':a.system)}</span>`:''}
         </div>
       </div>
       <div class="acc-item-actions">
@@ -825,74 +859,63 @@ function renderAccList(){
 }
 
 function openModal(id){
-  editId = id || null;
+  editId = id||null;
   document.getElementById('modalTitle').textContent = id ? 'Edit Account' : 'Add Account';
-  var a = id && accounts[id] ? accounts[id] : {};
-  document.getElementById('m_broker').value  = a.broker   || '';
-  document.getElementById('m_clientId').value= a.clientId || '';
-  document.getElementById('m_nick').value    = a.nickname || '';
-  document.getElementById('m_capital').value = a.capital  || '';
-  document.getElementById('m_system').value  = a.system   || '';
+  var a = id&&accounts[id] ? accounts[id] : {};
+  document.getElementById('m_broker').value  = a.broker   ||'';
+  document.getElementById('m_clientId').value= a.clientId ||'';
+  document.getElementById('m_nick').value    = a.nickname ||'';
+  document.getElementById('m_capital').value = a.capital  ||'';
+  document.getElementById('m_system').value  = a.system   ||'';
   document.getElementById('modalBg').classList.add('open');
 }
 function closeModal(){
   document.getElementById('modalBg').classList.remove('open');
-  editId = null;
+  editId=null;
 }
 async function saveAccount(){
   var broker  = document.getElementById('m_broker').value.trim();
   var nick    = document.getElementById('m_nick').value.trim();
   var cid     = document.getElementById('m_clientId').value.trim();
-  var capital = parseFloat(document.getElementById('m_capital').value) || 0;
+  var capital = parseFloat(document.getElementById('m_capital').value)||0;
   var system  = document.getElementById('m_system').value.trim();
-  if(!broker || !nick){ toast('Broker and Nickname are required', true); return; }
-  var obj = { broker, clientId:cid, nickname:nick, capital, system, updAt:Date.now() };
-  try {
-    if(editId){
-      await db.ref('margin/accounts/'+editId).update(obj);
-      toast('Account updated ✓');
-    } else {
-      await db.ref('margin/accounts').push(obj);
-      toast('Account added ✓');
-    }
+  if(!broker||!nick){ toast('Broker and Nickname are required',true); return; }
+  var obj={broker,clientId:cid,nickname:nick,capital,system,updAt:Date.now()};
+  try{
+    if(editId){ await db.ref('margin/accounts/'+editId).update(obj); toast('Account updated ✓'); }
+    else       { await db.ref('margin/accounts').push(obj);           toast('Account added ✓');   }
     closeModal();
-  } catch(e){ toast('Error: '+e.message, true); }
+  } catch(e){ toast('Error: '+e.message,true); }
 }
 async function delAccount(id){
   if(!confirm('Delete this account?')) return;
-  try { await db.ref('margin/accounts/'+id).remove(); toast('Deleted'); }
-  catch(e){ toast('Error: '+e.message, true); }
+  try{ await db.ref('margin/accounts/'+id).remove(); toast('Deleted'); }
+  catch(e){ toast('Error: '+e.message,true); }
 }
 
 // ══ UTILS ═════════════════════════════════════════════════════
 function inr(n){
-  if(n===null||n===undefined||isNaN(n)) return '—';
-  n = Math.round(n);
-  var neg = n < 0; n = Math.abs(n);
-  var s = n.toString(), r = '';
-  if(s.length > 3){
-    r = ',' + s.slice(-3); s = s.slice(0,-3);
-    while(s.length > 2){ r = ',' + s.slice(-2) + r; s = s.slice(0,-2); }
-    r = s + r;
-  } else r = s;
-  return (neg?'-':'') + '₹' + r;
+  if(n===null||n===undefined||isNaN(n)||n===''||n===0&&false) return '—';
+  n=Math.round(n); if(n===0) return '₹0';
+  var neg=n<0; n=Math.abs(n);
+  var s=n.toString(),r='';
+  if(s.length>3){ r=','+s.slice(-3); s=s.slice(0,-3);
+    while(s.length>2){ r=','+s.slice(-2)+r; s=s.slice(0,-2); } r=s+r; }
+  else r=s;
+  return (neg?'-':'')+'₹'+r;
 }
 function fmtDate(d){
   if(!d) return '—';
-  return new Date(d+'T00:00:00').toLocaleDateString('en-IN',{
-    day:'2-digit', month:'short', year:'numeric'
-  });
+  return new Date(d+'T00:00:00').toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
 }
 function esc(s){
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
-function toast(msg, isErr){
-  var el = document.getElementById('toast');
-  el.textContent = msg;
-  el.className   = 'toast ' + (isErr ? 'err' : 'ok');
-  el.style.display = 'block';
-  clearTimeout(el._t);
-  el._t = setTimeout(() => el.style.display='none', 3000);
+function toast(msg,isErr){
+  var el=document.getElementById('toast');
+  el.textContent=msg; el.className='toast '+(isErr?'err':'ok');
+  el.style.display='block'; clearTimeout(el._t);
+  el._t=setTimeout(()=>el.style.display='none',3000);
 }
 </script>
 </body>
