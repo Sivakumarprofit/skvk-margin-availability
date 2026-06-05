@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SKVK Margin Availability v1.5</title>
+<title>SKVK Margin Availability v1.6</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.34.0/dist/tabler-icons.min.css">
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
@@ -27,7 +27,7 @@
     --bg:#0f1117; --bg2:#1a1d23; --bg3:#242730;
     --text:#f0f2f5; --text2:#9aa0ad; --text3:#5a6070;
     --border:#2a2d35; --border2:#3a3d45;
-    --green-lt:#0a2218; --red-lt:#2a1210; --blue-lt:#0d1f3c; --amber-lt:#2a1f00;
+    --green-lt:#0a2218; --red-lt:#2a1210; --blue-lt:#0d1f3c;
     --warn-bg:#2a1f00; --warn-border:#f59e0b;
   }
 }
@@ -77,16 +77,18 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,sans-seri
 .btn.sm{height:26px;padding:0 10px;font-size:11px}
 .btn.lg{height:42px;padding:0 24px;font-size:13px}
 
-/* SUMMARY STRIP — 3 cards only */
-.sum-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}
+/* SUMMARY STRIP — 4 cards */
+.sum-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
 .scard{background:var(--bg2);border-radius:var(--rlg);padding:14px 16px;
   border:1px solid var(--border);box-shadow:var(--shadow)}
 .scard .lbl{font-size:10px;font-weight:600;color:var(--text2);
   text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px}
 .scard .val{font-size:18px;font-weight:800}
 .scard .sub{font-size:10px;color:var(--text3);margin-top:2px}
-.scard.blue .val{color:var(--blue)}
+.scard.blue  .val{color:var(--blue)}
 .scard.green .val{color:var(--green)}
+.scard.teal  .val{color:#0d7377}
+.scard.amber .val{color:var(--amber)}
 
 /* ENTRY TABLE */
 .entry-hdr{display:flex;align-items:center;justify-content:space-between;
@@ -95,12 +97,24 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,sans-seri
 
 .tbl-wrap{overflow-x:auto;border:1px solid var(--border);
   border-radius:var(--rlg);box-shadow:var(--shadow);margin-bottom:20px}
-table{width:100%;border-collapse:collapse;min-width:960px}
+
+/* Fixed column widths — same for header, body and total row */
+table{width:100%;border-collapse:collapse;min-width:960px;table-layout:fixed}
+
+/* Column widths */
+col.c-acc  {width:170px}
+col.c-cash {width:140px}
+col.c-cl   {width:130px}
+col.c-ce   {width:130px}
+col.c-am   {width:145px}
+col.c-cpct {width:145px}
+col.c-epct {width:130px}
+col.c-date {width:115px}
 
 thead th{background:var(--navy);padding:10px 12px;
   font-size:10px;font-weight:700;color:#fff;white-space:nowrap;
   text-align:left;border-bottom:2px solid var(--navy2);
-  text-transform:uppercase;letter-spacing:.4px}
+  text-transform:uppercase;letter-spacing:.4px;overflow:hidden}
 thead th.r{text-align:right}
 thead th.c{text-align:center}
 
@@ -108,69 +122,71 @@ tbody tr{border-bottom:1px solid var(--border);transition:background .1s}
 tbody tr:last-child{border-bottom:none}
 tbody tr:hover:not(.total-row):not(.warn-row) td{background:var(--bg3)}
 
-/* Warning row — Cash % < 50% */
+/* Warning row */
 tbody tr.warn-row{background:var(--warn-bg) !important;
   border-left:3px solid var(--warn-border)}
 tbody tr.warn-row td{background:var(--warn-bg) !important}
-tbody tr.warn-row:hover td{background:#fff3cd !important}
 
-tbody tr.total-row{background:var(--navy2) !important}
-tbody tr.total-row td{color:#fff !important;font-weight:700;padding:10px 12px}
+/* Total row — exact same padding/alignment as body rows */
+tbody tr.total-row{background:var(--navy2) !important;border-top:2px solid var(--navy)}
+tbody tr.total-row td{color:#fff !important;font-weight:700;
+  padding:10px 12px;font-size:12px;overflow:hidden}
+tbody tr.total-row td.r{text-align:right}
+tbody tr.total-row td.c{text-align:center}
 
-td{padding:7px 12px;font-size:12px;vertical-align:middle}
+td{padding:8px 12px;font-size:12px;vertical-align:middle;overflow:hidden}
 td.r{text-align:right}
 td.c{text-align:center}
 
-.acc-cell .acc-name{font-weight:700;font-size:12px;display:flex;align-items:center;gap:5px}
-.acc-cell .acc-sub{font-size:10px;color:var(--text3);margin-top:1px}
-.warn-icon{color:var(--amber);font-size:14px}
+.acc-cell .acc-name{font-weight:700;font-size:12px;display:flex;align-items:center;gap:4px}
+.acc-cell .acc-sub{font-size:10px;color:var(--text3);margin-top:2px}
+.warn-icon{color:var(--amber);font-size:13px;flex-shrink:0}
 
-/* Inline editable inputs — KEY FIX: no re-render on blur */
+/* Inline editable inputs — NO re-render on blur */
 .cell-input{width:100%;height:30px;padding:0 6px;
   border-radius:6px;border:1px solid transparent;
   background:transparent;color:var(--text);
   font-size:12px;font-family:inherit;text-align:right;
+  font-weight:700;  /* bold cash column handled per-column */
   transition:all .15s;cursor:pointer}
 .cell-input:hover{border-color:var(--border2);background:var(--bg2)}
 .cell-input:focus{outline:none;border-color:var(--blue);
   background:var(--bg2);box-shadow:0 0 0 2px rgba(21,101,192,.1);cursor:text}
 
+/* Cash balance input — bold */
+.cell-input.cash-input{font-weight:700}
+
 /* Row date input */
-.row-date-input{width:118px;height:28px;padding:0 6px;
+.row-date-input{width:105px;height:28px;padding:0 4px;
   border-radius:6px;border:1px solid transparent;
   background:transparent;color:var(--text2);
   font-size:11px;font-family:inherit;cursor:pointer;transition:all .15s}
 .row-date-input:hover{border-color:var(--border2);background:var(--bg2)}
 .row-date-input:focus{outline:none;border-color:var(--blue);background:var(--bg2);color:var(--text)}
 
-/* Row save indicator */
-.row-save-indicator{font-size:10px;display:flex;align-items:center;gap:3px;
-  white-space:nowrap;transition:all .3s}
-.rsi-saving{color:var(--amber)}
-.rsi-saved{color:var(--green)}
-.rsi-error{color:var(--red)}
-
-/* Computed display */
+/* Computed cells */
 .total-cell{font-weight:700;color:var(--blue);font-variant-numeric:tabular-nums}
-.cash-pct{font-weight:700;color:var(--green)}
-.eq-pct{font-weight:700;color:var(--amber)}
+.cash-pct-val{font-weight:700;color:var(--green)}
+.cash-pct-val.low{color:var(--red)}
+.eq-pct-val{font-weight:700;color:var(--amber)}
 .pct-wrap{display:flex;align-items:center;gap:5px;justify-content:center}
-.mini-bar{flex:1;height:4px;background:var(--bg3);border-radius:2px;overflow:hidden;min-width:30px}
+.mini-bar{width:40px;height:4px;background:var(--bg3);border-radius:2px;overflow:hidden;flex-shrink:0}
 .mini-fill-cash{height:100%;background:var(--green);border-radius:2px;transition:width .3s}
-.mini-fill-eq{height:100%;background:var(--amber);border-radius:2px;transition:width .3s}
 .mini-fill-cash.low{background:var(--red)}
+.mini-fill-eq{height:100%;background:var(--amber);border-radius:2px;transition:width .3s}
 
 /* HISTORY */
 .hist-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
 .hist-hdr h2{font-size:15px;font-weight:700}
 .hist-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--rlg);margin-bottom:20px}
-.hist-wrap table{min-width:700px}
+.hist-wrap table{min-width:700px;table-layout:auto}
 .delta{font-size:11px;font-weight:700}
 .pos{color:var(--green)}.neg{color:var(--red)}
 
-/* Detail modal table */
+/* Detail modal */
 .detail-table{width:100%;border-collapse:collapse;font-size:11px}
-.detail-table th{background:var(--navy);color:#fff;padding:6px 10px;text-align:left;font-size:10px;text-transform:uppercase}
+.detail-table th{background:var(--navy);color:#fff;padding:6px 10px;
+  text-align:left;font-size:10px;text-transform:uppercase}
 .detail-table th.r{text-align:right}
 .detail-table td{padding:6px 10px;border-bottom:1px solid var(--border)}
 .detail-table td.r{text-align:right;font-variant-numeric:tabular-nums}
@@ -194,7 +210,7 @@ td.c{text-align:center}
   padding:18px;margin-top:6px}
 .danger-section h3{font-size:13px;font-weight:700;margin-bottom:8px;
   display:flex;align-items:center;gap:6px;color:var(--red)}
-.del-grid{display:grid;grid-template-columns:1fr 1fr auto;gap:10px;align-items:end}
+.del-grid{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:end}
 
 /* MODAL */
 .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);
@@ -203,7 +219,7 @@ td.c{text-align:center}
 .modal{background:var(--bg2);border-radius:var(--rlg);border:1px solid var(--border2);
   padding:22px;width:480px;max-width:100%;max-height:90vh;overflow-y:auto;
   box-shadow:0 16px 48px rgba(0,0,0,.22)}
-.modal.wide{width:720px}
+.modal.wide{width:740px}
 .modal h3{font-size:14px;font-weight:700;margin-bottom:16px}
 .m-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}
 .m-grid .full{grid-column:1/-1}
@@ -231,7 +247,7 @@ td.c{text-align:center}
 .empty h3{font-size:14px;font-weight:600;margin-bottom:5px;color:var(--text)}
 .empty p{font-size:12px;line-height:1.6}
 
-@media(max-width:768px){.sum-strip{grid-template-columns:1fr 1fr}}
+@media(max-width:900px){.sum-strip{grid-template-columns:1fr 1fr}}
 @media(max-width:480px){.sum-strip{grid-template-columns:1fr}.del-grid{grid-template-columns:1fr}}
 </style>
 </head>
@@ -243,7 +259,7 @@ td.c{text-align:center}
     <div class="brand">
       <i class="ti ti-chart-candle" style="font-size:18px"></i>
       SKVK <span class="accent">Margin Availability</span>
-      <span class="vbadge">v1.5</span>
+      <span class="vbadge">v1.6</span>
     </div>
     <div class="topbar-right">
       <span class="topbar-date" id="topDate"></span>
@@ -262,50 +278,62 @@ td.c{text-align:center}
     <div class="entry-hdr">
       <h2>Daily Margin Entry</h2>
       <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text2)">
-        <i class="ti ti-device-floppy" style="color:var(--green)"></i>
-        Each cell auto-saves on exit &nbsp;|&nbsp;
-        <i class="ti ti-alert-triangle" style="color:var(--amber)"></i>
-        Warning shown when Cash % &lt; 50%
+        <i class="ti ti-device-floppy" style="color:var(--green)"></i> Auto-saves on cell exit &nbsp;|&nbsp;
+        <i class="ti ti-alert-triangle" style="color:var(--amber)"></i> Warning when Cash % &lt; 50%
       </div>
     </div>
 
-    <!-- Summary — 3 cards -->
+    <!-- 4 Summary Cards — real numbers only -->
     <div class="sum-strip">
       <div class="scard blue">
         <div class="lbl">Total Available Margin</div>
         <div class="val" id="sAM">₹ —</div>
-        <div class="sub" id="sAMsub">latest per account</div>
+        <div class="sub" id="sAMsub">—</div>
       </div>
       <div class="scard">
         <div class="lbl">Total Collateral Equity</div>
         <div class="val" id="sCol">₹ —</div>
-        <div class="sub">Non-cash component</div>
+        <div class="sub">Non-cash pledged</div>
+      </div>
+      <div class="scard teal">
+        <div class="lbl">Total Collateral Liquid</div>
+        <div class="val" id="sLiq">₹ —</div>
+        <div class="sub">Liquid / LiquidBees</div>
       </div>
       <div class="scard green">
-        <div class="lbl">Total Cash + Liquid</div>
+        <div class="lbl">Total Cash Balance</div>
         <div class="val" id="sCash">₹ —</div>
-        <div class="sub">Cash component</div>
+        <div class="sub">Real cash in account</div>
       </div>
     </div>
 
-    <!-- Table -->
+    <!-- Table with fixed col widths for alignment -->
     <div class="tbl-wrap">
       <table>
+        <colgroup>
+          <col class="c-acc">
+          <col class="c-cash">
+          <col class="c-cl">
+          <col class="c-ce">
+          <col class="c-am">
+          <col class="c-cpct">
+          <col class="c-epct">
+          <col class="c-date">
+        </colgroup>
         <thead>
           <tr>
-            <th style="width:170px">Account</th>
-            <th class="r" style="width:130px">Cash Balance</th>
-            <th class="r" style="width:130px">Col. Liquid</th>
-            <th class="r" style="width:130px">Col. Equity</th>
-            <th class="r" style="width:140px">Total Margin</th>
-            <th class="c" style="width:150px">Cash Component %</th>
-            <th class="c" style="width:150px">Non-Cash %</th>
-            <th style="width:120px">Date</th>
-            <th style="width:80px">Status</th>
+            <th>Account</th>
+            <th class="r">Cash Balance</th>
+            <th class="r">Col. Liquid</th>
+            <th class="r">Col. Equity</th>
+            <th class="r">Total Margin</th>
+            <th class="c">Cash Component %</th>
+            <th class="c">Non-Cash %</th>
+            <th>Date</th>
           </tr>
         </thead>
         <tbody id="entryBody">
-          <tr><td colspan="9" style="text-align:center;padding:40px;color:var(--text2)">
+          <tr><td colspan="8" style="text-align:center;padding:40px;color:var(--text2)">
             <i class="ti ti-refresh spin"></i> Loading…
           </td></tr>
         </tbody>
@@ -346,7 +374,6 @@ td.c{text-align:center}
       <button class="btn navy" onclick="openModal()"><i class="ti ti-plus"></i> Add Account</button>
     </div>
     <div class="acc-list" id="accList"></div>
-
     <div class="danger-section">
       <h3><i class="ti ti-trash"></i> Delete Old Data</h3>
       <p style="font-size:12px;color:var(--text2);margin-bottom:12px">
@@ -409,9 +436,7 @@ td.c{text-align:center}
 <div class="modal-bg" id="detailModalBg">
   <div class="modal wide">
     <h3 id="detailModalTitle">Entry Detail</h3>
-    <div style="overflow-x:auto">
-      <div id="detailModalBody"></div>
-    </div>
+    <div style="overflow-x:auto"><div id="detailModalBody"></div></div>
     <div class="mfooter">
       <button class="btn" onclick="document.getElementById('detailModalBg').classList.remove('open')">Close</button>
     </div>
@@ -435,29 +460,23 @@ var FIREBASE_CONFIG = {
 // ══ GLOBALS ══
 var db;
 var accounts         = {};
-var latestPerAccount = {};  // { accId: { cash, collateralEquity, collateralLiquid, date, savedAt } }
+var latestPerAccount = {};
 var editId           = null;
 var histData         = [];
-var saveTimers       = {};  // debounce timers per account
+var saveTimers       = {};
 
 // ══ BOOT ══
 (function boot(){
   try{ firebase.initializeApp(FIREBASE_CONFIG); }catch(e){}
   db = firebase.database();
-
   document.getElementById('topDate').textContent =
     new Date().toLocaleDateString('en-IN',{weekday:'short',day:'2-digit',month:'short',year:'numeric'});
 
-  // Accounts subscription — only renders table, does NOT overwrite entered data
   db.ref('margin/accounts').on('value', snap=>{
     accounts = snap.val()||{};
     renderAccList();
-    // Only render table on first load (latestPerAccount is empty)
-    if(Object.keys(latestPerAccount).length === 0){
-      loadLatest();
-    } else {
-      renderTable(); // re-render structure but keep data intact
-    }
+    if(Object.keys(latestPerAccount).length===0) loadLatest();
+    else renderTable();
   });
 })();
 
@@ -471,7 +490,7 @@ function goTab(t){
   if(t==='settings') renderAccList();
 }
 
-// ══ LOAD LATEST (only on page boot) ══
+// ══ LOAD LATEST ══
 async function loadLatest(){
   try{
     var snap = await db.ref('margin/accounts_latest').once('value');
@@ -480,58 +499,59 @@ async function loadLatest(){
   }catch(e){ toast('Load error: '+e.message,true); }
 }
 
-// ══ RENDER TABLE — never resets inputs that are focused ══
+// ══ RENDER TABLE ══
 function renderTable(){
   var tb   = document.getElementById('entryBody');
   var list = Object.entries(accounts);
-
   if(!list.length){
-    tb.innerHTML=`<tr><td colspan="9"><div class="empty">
+    tb.innerHTML=`<tr><td colspan="8"><div class="empty">
       <i class="ti ti-building-bank"></i><h3>No accounts configured</h3>
       <p>Go to <strong>Settings</strong> to add broker accounts.</p></div></td></tr>`;
     updateSummary(); return;
   }
 
   var today = new Date().toISOString().slice(0,10);
-
   var rows = list.map(([id,a])=>{
     var e    = latestPerAccount[id]||{};
-    var cash = e.cash             !==undefined ? parseFloat(e.cash).toFixed(2)             : '';
-    var ce   = e.collateralEquity !==undefined ? parseFloat(e.collateralEquity).toFixed(2) : '';
-    var cl   = e.collateralLiquid !==undefined ? parseFloat(e.collateralLiquid).toFixed(2) : '';
+    var cash = e.cash             !==undefined ? parseFloat(e.cash)             : 0;
+    var ce   = e.collateralEquity !==undefined ? parseFloat(e.collateralEquity) : 0;
+    var cl   = e.collateralLiquid !==undefined ? parseFloat(e.collateralLiquid) : 0;
     var date = e.date||today;
+    var am   = cash+ce+cl;
+    var cashComp = am>0?((cash+cl)/am*100):0;
+    var eqComp   = am>0?(ce/am*100):0;
+    var isWarn   = am>0 && cashComp<50;
 
-    var cashN=parseFloat(cash)||0, ceN=parseFloat(ce)||0, clN=parseFloat(cl)||0;
-    var am=cashN+ceN+clN;
-    var cashComp=am>0?((cashN+clN)/am*100):0;
-    var eqComp  =am>0?(ceN/am*100):0;
-    var isWarn  = am>0 && cashComp<50;
+    // Display values: show formatted number in input (user sees Indian format)
+    var cashDisp = cash>0 ? cash.toFixed(2) : '';
+    var ceDisp   = ce>0   ? ce.toFixed(2)   : '';
+    var clDisp   = cl>0   ? cl.toFixed(2)   : '';
 
     return `<tr id="row_${id}" class="${isWarn?'warn-row':''}">
       <td>
         <div class="acc-cell">
           <div class="acc-name">
-            ${isWarn?'<i class="ti ti-alert-triangle warn-icon" title="Cash component below 50%"></i>':''}
+            ${isWarn?'<i class="ti ti-alert-triangle warn-icon"></i>':''}
             ${esc(a.broker||'')} — ${esc(a.nickname||'')}
           </div>
           <div class="acc-sub">${esc(a.clientId||'')}${a.system?' · '+esc(a.system.slice(0,22)):''}</div>
         </div>
       </td>
       <td class="r">
-        <input type="number" step="0.01" class="cell-input"
-          id="f_cash_${id}" value="${cash}" placeholder="0.00"
+        <input type="number" step="0.01" class="cell-input cash-input"
+          id="f_cash_${id}" value="${cashDisp}" placeholder="0.00"
           oninput="onInput('${id}','cash',this.value)"
           onblur="onBlurSave('${id}')">
       </td>
       <td class="r">
         <input type="number" step="0.01" class="cell-input"
-          id="f_cl_${id}" value="${cl}" placeholder="0.00"
+          id="f_cl_${id}" value="${clDisp}" placeholder="0.00"
           oninput="onInput('${id}','collateralLiquid',this.value)"
           onblur="onBlurSave('${id}')">
       </td>
       <td class="r">
         <input type="number" step="0.01" class="cell-input"
-          id="f_ce_${id}" value="${ce}" placeholder="0.00"
+          id="f_ce_${id}" value="${ceDisp}" placeholder="0.00"
           oninput="onInput('${id}','collateralEquity',this.value)"
           onblur="onBlurSave('${id}')">
       </td>
@@ -542,7 +562,7 @@ function renderTable(){
         <div class="pct-wrap" id="cashcomp_${id}">
           ${am>0
             ?`<div class="mini-bar"><div class="mini-fill-cash${isWarn?' low':''}" style="width:${cashComp}%"></div></div>
-              <span class="cash-pct" style="${isWarn?'color:var(--red)':''}">${cashComp.toFixed(2)}%</span>`
+              <span class="cash-pct-val${isWarn?' low':''}">${cashComp.toFixed(2)}%</span>`
             :'<span style="color:var(--text3)">—</span>'}
         </div>
       </td>
@@ -550,7 +570,7 @@ function renderTable(){
         <div class="pct-wrap" id="eqcomp_${id}">
           ${am>0
             ?`<div class="mini-bar"><div class="mini-fill-eq" style="width:${eqComp}%"></div></div>
-              <span class="eq-pct">${eqComp.toFixed(2)}%</span>`
+              <span class="eq-pct-val">${eqComp.toFixed(2)}%</span>`
             :'<span style="color:var(--text3)">—</span>'}
         </div>
       </td>
@@ -558,45 +578,36 @@ function renderTable(){
         <input type="date" class="row-date-input" id="f_date_${id}" value="${date}"
           onchange="onDateChange('${id}',this.value)">
       </td>
-      <td id="rsi_${id}">
-        ${e.savedAt
-          ?`<div class="row-save-indicator rsi-saved">
-              <i class="ti ti-check"></i>
-              ${new Date(e.savedAt).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})}
-            </div>`
-          :'<div class="row-save-indicator" style="color:var(--text3)">—</div>'}
-      </td>
     </tr>`;
   }).join('');
 
-  // Totals row
-  var tots=calcTotals();
-  var tcPct=tots.am>0?((tots.cash+tots.cl)/tots.am*100).toFixed(2):'—';
-  var tePct=tots.am>0?(tots.ce/tots.am*100).toFixed(2):'—';
-  rows+=`<tr class="total-row">
+  // Total row — same column order, same alignment classes
+  var tots = calcTotals();
+  var tcPct = tots.am>0?((tots.cash+tots.cl)/tots.am*100).toFixed(2):'—';
+  var tePct = tots.am>0?(tots.ce/tots.am*100).toFixed(2):'—';
+
+  rows += `<tr class="total-row">
     <td><strong>TOTAL</strong></td>
     <td class="r">${inr2(tots.cash)}</td>
     <td class="r">${inr2(tots.cl)}</td>
     <td class="r">${inr2(tots.ce)}</td>
     <td class="r" style="color:#64b5f6;font-size:13px">${inr2(tots.am)}</td>
-    <td class="c" style="color:#81c784">${tcPct}%</td>
-    <td class="c" style="color:#ffb74d">${tePct}%</td>
-    <td colspan="2"></td>
+    <td class="c"><span style="color:#81c784">${tcPct}${tcPct!=='—'?'%':''}</span></td>
+    <td class="c"><span style="color:#ffb74d">${tePct}${tePct!=='—'?'%':''}</span></td>
+    <td></td>
   </tr>`;
 
   tb.innerHTML = rows;
   updateSummary();
 }
 
-// ══ INPUT — only updates local state, NO re-render ══
+// ══ INPUT — only update local state, recalc row ══
 function onInput(id, field, val){
   if(!latestPerAccount[id]) latestPerAccount[id]={};
   latestPerAccount[id][field] = val===''?0:(parseFloat(val)||0);
-
-  // Update only the computed cells for this row — never re-render table
   recalcRow(id);
-  updateSummary();
   refreshTotalRow();
+  updateSummary();
 }
 
 function onDateChange(id, val){
@@ -604,52 +615,35 @@ function onDateChange(id, val){
   latestPerAccount[id].date = val;
 }
 
-// ══ ON BLUR — auto-save this single account ══
-async function onBlurSave(id){
-  // Small delay so if user is tabbing between cells of same row, we don't save mid-entry
+// ══ BLUR — auto-save with debounce ══
+function onBlurSave(id){
   clearTimeout(saveTimers[id]);
-  saveTimers[id] = setTimeout(()=>saveAccount_row(id), 600);
+  saveTimers[id] = setTimeout(()=>saveRow(id), 600);
 }
 
-async function saveAccount_row(id){
-  var rsi = document.getElementById('rsi_'+id);
-  if(rsi) rsi.innerHTML='<div class="row-save-indicator rsi-saving"><i class="ti ti-refresh spin"></i> Saving…</div>';
-
+async function saveRow(id){
   var e    = latestPerAccount[id]||{};
   var date = document.getElementById('f_date_'+id)?.value || new Date().toISOString().slice(0,10);
   var now  = Date.now();
-
   var payload = {
     cash:             parseFloat(e.cash)||0,
     collateralEquity: parseFloat(e.collateralEquity)||0,
     collateralLiquid: parseFloat(e.collateralLiquid)||0,
     date, savedAt: now
   };
-
   try{
-    // Save latest for this account
     await db.ref('margin/accounts_latest/'+id).set(payload);
     latestPerAccount[id] = payload;
-
-    // Save history snapshot
-    var snapKey = now+'_'+id;
+    // History snapshot
     var tots = calcTotals();
-    await db.ref('margin/history/'+snapKey).set({
-      savedAt: now,
-      accountId: id,
-      entry: payload,
+    await db.ref('margin/history/'+now+'_'+id).set({
+      savedAt: now, accountId: id, entry: payload,
       totals:{ cash:tots.cash, collateral:tots.ce, collateralLiquid:tots.cl, available:tots.am }
     });
-
-    var tStr = new Date(now).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
-    if(rsi) rsi.innerHTML=`<div class="row-save-indicator rsi-saved"><i class="ti ti-check"></i> ${tStr}</div>`;
-  }catch(err){
-    if(rsi) rsi.innerHTML='<div class="row-save-indicator rsi-error"><i class="ti ti-x"></i> Error</div>';
-    toast('Save error: '+err.message, true);
-  }
+  }catch(err){ toast('Save error: '+err.message,true); }
 }
 
-// ══ RECALC ROW (no re-render) ══
+// ══ RECALC ROW — no re-render ══
 function recalcRow(id){
   var e    = latestPerAccount[id]||{};
   var cash = parseFloat(e.cash)||0;
@@ -660,38 +654,33 @@ function recalcRow(id){
   var eqComp   = am>0?(ce/am*100):0;
   var isWarn   = am>0 && cashComp<50;
 
-  // Total cell
   var amEl=document.getElementById('am_'+id);
   if(amEl) amEl.textContent=am>0?inr2(am):'—';
 
-  // Cash % cell
   var ccEl=document.getElementById('cashcomp_'+id);
   if(ccEl) ccEl.innerHTML=am>0
     ?`<div class="mini-bar"><div class="mini-fill-cash${isWarn?' low':''}" style="width:${cashComp}%"></div></div>
-      <span class="cash-pct" style="${isWarn?'color:var(--red)':''}">${cashComp.toFixed(2)}%</span>`
+      <span class="cash-pct-val${isWarn?' low':''}">${cashComp.toFixed(2)}%</span>`
     :'<span style="color:var(--text3)">—</span>';
 
-  // Eq % cell
   var ecEl=document.getElementById('eqcomp_'+id);
   if(ecEl) ecEl.innerHTML=am>0
     ?`<div class="mini-bar"><div class="mini-fill-eq" style="width:${eqComp}%"></div></div>
-      <span class="eq-pct">${eqComp.toFixed(2)}%</span>`
+      <span class="eq-pct-val">${eqComp.toFixed(2)}%</span>`
     :'<span style="color:var(--text3)">—</span>';
 
-  // Row warning
   var row=document.getElementById('row_'+id);
   if(row){
-    row.classList.toggle('warn-row', isWarn);
+    row.classList.toggle('warn-row',isWarn);
     var nameEl=row.querySelector('.acc-name');
     if(nameEl){
       var a=accounts[id]||{};
-      nameEl.innerHTML=(isWarn?'<i class="ti ti-alert-triangle warn-icon" title="Cash component below 50%"></i> ':'')+
+      nameEl.innerHTML=(isWarn?'<i class="ti ti-alert-triangle warn-icon"></i> ':'')+
         esc(a.broker||'')+' — '+esc(a.nickname||'');
     }
   }
 }
 
-// ══ TOTALS ══
 function calcTotals(){
   var cash=0,ce=0,cl=0;
   Object.keys(accounts).forEach(id=>{
@@ -713,15 +702,16 @@ function refreshTotalRow(){
   tr.cells[2].textContent=inr2(tots.cl);
   tr.cells[3].textContent=inr2(tots.ce);
   tr.cells[4].innerHTML=`<span style="color:#64b5f6;font-size:13px">${inr2(tots.am)}</span>`;
-  tr.cells[5].innerHTML=`<span style="color:#81c784">${tcPct}%</span>`;
-  tr.cells[6].innerHTML=`<span style="color:#ffb74d">${tePct}%</span>`;
+  tr.cells[5].innerHTML=`<span style="color:#81c784">${tcPct}${tcPct!=='—'?'%':''}</span>`;
+  tr.cells[6].innerHTML=`<span style="color:#ffb74d">${tePct}${tePct!=='—'?'%':''}</span>`;
 }
 
 function updateSummary(){
   var tots=calcTotals();
   document.getElementById('sAM').textContent  = inr2(tots.am);
   document.getElementById('sCol').textContent = inr2(tots.ce);
-  document.getElementById('sCash').textContent= inr2(tots.cash+tots.cl);
+  document.getElementById('sLiq').textContent = inr2(tots.cl);
+  document.getElementById('sCash').textContent= inr2(tots.cash);
   var n=Object.keys(accounts).length;
   document.getElementById('sAMsub').textContent=n+' account'+(n!==1?'s':'')+' configured';
 }
@@ -733,7 +723,6 @@ async function loadHistory(){
   try{
     var snap=await db.ref('margin/history').orderByKey().limitToLast(100).once('value');
     var raw=snap.val()||{};
-    // Group by day for summary display
     var byDay={};
     Object.entries(raw).forEach(([k,v])=>{
       var d=new Date(v.savedAt).toISOString().slice(0,10);
@@ -770,18 +759,8 @@ async function showDetail(idx){
   var r=histData[idx]; if(!r) return;
   var tStr=new Date(r.savedAt).toLocaleString('en-IN',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
   document.getElementById('detailModalTitle').textContent='Snapshot — '+tStr;
-
-  // Load full snapshot from accounts_latest at that time, or use entries
-  var entries = r.entries || (r.entry && r.accountId ? {[r.accountId]: r.entry} : {});
-
-  // If single-account snapshot, supplement with latest other accounts
-  if(r.accountId && Object.keys(entries).length===1){
-    // Show full latest accounts_latest for context
-    var snap=await db.ref('margin/accounts_latest').once('value');
-    var allLatest=snap.val()||{};
-    entries=allLatest;
-  }
-
+  var snap=await db.ref('margin/accounts_latest').once('value');
+  var entries=snap.val()||{};
   var rows=Object.entries(entries).map(([id,e])=>{
     var a=accounts[id]||{};
     var cash=parseFloat(e.cash)||0,ce=parseFloat(e.collateralEquity)||0,cl=parseFloat(e.collateralLiquid)||0;
@@ -800,7 +779,6 @@ async function showDetail(idx){
       <td style="font-size:10px;color:var(--text3)">${e.date||'—'}</td>
     </tr>`;
   }).join('');
-
   document.getElementById('detailModalBody').innerHTML=`
     <table class="detail-table">
       <thead><tr>
@@ -808,7 +786,7 @@ async function showDetail(idx){
         <th class="r">Col.Equity</th><th class="r">Total</th>
         <th class="r">Cash%</th><th class="r">NonCash%</th><th>Date</th>
       </tr></thead>
-      <tbody>${rows||'<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--text2)">No detail available</td></tr>'}</tbody>
+      <tbody>${rows||'<tr><td colspan="8" style="text-align:center;padding:20px">No data</td></tr>'}</tbody>
     </table>`;
   document.getElementById('detailModalBg').classList.add('open');
 }
@@ -853,7 +831,6 @@ function openModal(id){
   document.getElementById('modalBg').classList.add('open');
 }
 function closeModal(){document.getElementById('modalBg').classList.remove('open');editId=null;}
-
 async function saveAccount(){
   var broker=document.getElementById('m_broker').value.trim();
   var nick  =document.getElementById('m_nick').value.trim();
@@ -868,13 +845,11 @@ async function saveAccount(){
     closeModal();
   }catch(e){toast('Error: '+e.message,true);}
 }
-
 async function delAccount(id){
   if(!confirm('Delete this account?')) return;
   try{await db.ref('margin/accounts/'+id).remove();toast('Deleted');}
   catch(e){toast('Error: '+e.message,true);}
 }
-
 async function deleteOldData(){
   var before=document.getElementById('delBefore').value;
   if(!before){toast('Select a date first',true);return;}
@@ -891,14 +866,11 @@ async function deleteOldData(){
     toast(toDelete.length+' entries deleted ✓');
   }catch(e){toast('Error: '+e.message,true);}
 }
-
 async function deleteAllData(){
   if(!confirm('⚠️ Delete ALL history? Cannot be undone.')) return;
-  if(!confirm('Absolutely sure? All saved history will be gone.')) return;
-  try{
-    await db.ref('margin/history').remove();
-    toast('All history deleted');
-  }catch(e){toast('Error: '+e.message,true);}
+  if(!confirm('Absolutely sure? All history will be gone permanently.')) return;
+  try{await db.ref('margin/history').remove();toast('All history deleted');}
+  catch(e){toast('Error: '+e.message,true);}
 }
 
 // ══ UTILS ══
