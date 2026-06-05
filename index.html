@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SKVK Margin Availability v2.0</title>
+<title>SKVK Margin Availability v2.1</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.34.0/dist/tabler-icons.min.css">
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
@@ -257,7 +257,7 @@ td.c{text-align:center}
     <div class="brand">
       <i class="ti ti-chart-candle" style="font-size:18px"></i>
       SKVK <span class="accent">Margin Availability</span>
-      <span class="vbadge">v2.0</span>
+      <span class="vbadge">v2.1</span>
     </div>
     <div class="topbar-right">
       <span class="topbar-date" id="topDate"></span>
@@ -649,14 +649,17 @@ function renderCashLakh(id, cash){
 
 function renderCashPct(cashComp){
   var isWarn = cashComp < 50;
-  if(isWarn){
-    return `<span style="color:var(--red);font-weight:700;text-align:center;display:inline-block">
-      <i class="ti ti-alert-triangle" style="font-size:11px"></i> ${cashComp.toFixed(2)}%
-      <div style="font-size:9px;color:var(--red);margin-top:1px">Min: 50%</div>
-    </span>`;
-  }
-  return `<div class="mini-bar" style="min-width:36px"><div class="mini-fill-cash" style="width:${cashComp}%"></div></div>
-    <span class="cash-pct-val">${cashComp.toFixed(2)}%</span>`;
+  var barColor = isWarn ? 'var(--red)' : 'var(--green)';
+  var pctColor = isWarn ? 'var(--red)' : 'var(--green)';
+  return `<div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+    <div style="display:flex;align-items:center;gap:5px">
+      <div class="mini-bar"><div class="mini-fill-cash" style="width:${cashComp}%;background:${barColor}"></div></div>
+      <span class="cash-pct-val" style="color:${pctColor}">${cashComp.toFixed(2)}%</span>
+    </div>
+    ${isWarn ? `<div style="font-size:9px;color:var(--red);font-weight:600;display:flex;align-items:center;gap:2px">
+      <i class="ti ti-alert-triangle" style="font-size:10px"></i> Below 50%
+    </div>` : ''}
+  </div>`;
 }
 
 // Parse string like "2,84,888.56" or "284888.56" → number
