@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SKVK Margin Availability v1.4</title>
+<title>SKVK Margin Availability v1.5</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.34.0/dist/tabler-icons.min.css">
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
@@ -17,6 +17,7 @@
   --red:#c0392b; --red-lt:#fdf0ee;
   --blue:#1565c0; --blue-lt:#e8f0fe;
   --amber:#d97706; --amber-lt:#fef3c7;
+  --warn-bg:#fff8e1; --warn-border:#f59e0b;
   --r:8px; --rlg:12px;
   --shadow:0 2px 10px rgba(0,0,0,.07);
   --shadow2:0 4px 20px rgba(0,0,0,.12);
@@ -27,6 +28,7 @@
     --text:#f0f2f5; --text2:#9aa0ad; --text3:#5a6070;
     --border:#2a2d35; --border2:#3a3d45;
     --green-lt:#0a2218; --red-lt:#2a1210; --blue-lt:#0d1f3c; --amber-lt:#2a1f00;
+    --warn-bg:#2a1f00; --warn-border:#f59e0b;
   }
 }
 *{box-sizing:border-box;margin:0;padding:0}
@@ -75,8 +77,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,sans-seri
 .btn.sm{height:26px;padding:0 10px;font-size:11px}
 .btn.lg{height:42px;padding:0 24px;font-size:13px}
 
-/* SUMMARY STRIP */
-.sum-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+/* SUMMARY STRIP — 3 cards only */
+.sum-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}
 .scard{background:var(--bg2);border-radius:var(--rlg);padding:14px 16px;
   border:1px solid var(--border);box-shadow:var(--shadow)}
 .scard .lbl{font-size:10px;font-weight:600;color:var(--text2);
@@ -85,7 +87,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,sans-seri
 .scard .sub{font-size:10px;color:var(--text3);margin-top:2px}
 .scard.blue .val{color:var(--blue)}
 .scard.green .val{color:var(--green)}
-.scard.amber .val{color:var(--amber)}
 
 /* ENTRY TABLE */
 .entry-hdr{display:flex;align-items:center;justify-content:space-between;
@@ -93,7 +94,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,sans-seri
 .entry-hdr h2{font-size:15px;font-weight:700}
 
 .tbl-wrap{overflow-x:auto;border:1px solid var(--border);
-  border-radius:var(--rlg);box-shadow:var(--shadow);margin-bottom:70px}
+  border-radius:var(--rlg);box-shadow:var(--shadow);margin-bottom:20px}
 table{width:100%;border-collapse:collapse;min-width:960px}
 
 thead th{background:var(--navy);padding:10px 12px;
@@ -105,18 +106,26 @@ thead th.c{text-align:center}
 
 tbody tr{border-bottom:1px solid var(--border);transition:background .1s}
 tbody tr:last-child{border-bottom:none}
-tbody tr:hover td:not(.no-hover){background:var(--bg3)}
+tbody tr:hover:not(.total-row):not(.warn-row) td{background:var(--bg3)}
+
+/* Warning row — Cash % < 50% */
+tbody tr.warn-row{background:var(--warn-bg) !important;
+  border-left:3px solid var(--warn-border)}
+tbody tr.warn-row td{background:var(--warn-bg) !important}
+tbody tr.warn-row:hover td{background:#fff3cd !important}
+
 tbody tr.total-row{background:var(--navy2) !important}
-tbody tr.total-row td{color:#fff !important;font-weight:700;padding:10px 12px;font-size:12px}
+tbody tr.total-row td{color:#fff !important;font-weight:700;padding:10px 12px}
 
 td{padding:7px 12px;font-size:12px;vertical-align:middle}
 td.r{text-align:right}
 td.c{text-align:center}
 
-.acc-cell .acc-name{font-weight:700;font-size:12px}
+.acc-cell .acc-name{font-weight:700;font-size:12px;display:flex;align-items:center;gap:5px}
 .acc-cell .acc-sub{font-size:10px;color:var(--text3);margin-top:1px}
+.warn-icon{color:var(--amber);font-size:14px}
 
-/* Inline editable inputs */
+/* Inline editable inputs — KEY FIX: no re-render on blur */
 .cell-input{width:100%;height:30px;padding:0 6px;
   border-radius:6px;border:1px solid transparent;
   background:transparent;color:var(--text);
@@ -126,15 +135,20 @@ td.c{text-align:center}
 .cell-input:focus{outline:none;border-color:var(--blue);
   background:var(--bg2);box-shadow:0 0 0 2px rgba(21,101,192,.1);cursor:text}
 
-/* Date input in row */
-.row-date-input{width:110px;height:28px;padding:0 6px;
+/* Row date input */
+.row-date-input{width:118px;height:28px;padding:0 6px;
   border-radius:6px;border:1px solid transparent;
   background:transparent;color:var(--text2);
-  font-size:11px;font-family:inherit;cursor:pointer;
-  transition:all .15s}
+  font-size:11px;font-family:inherit;cursor:pointer;transition:all .15s}
 .row-date-input:hover{border-color:var(--border2);background:var(--bg2)}
-.row-date-input:focus{outline:none;border-color:var(--blue);
-  background:var(--bg2);color:var(--text)}
+.row-date-input:focus{outline:none;border-color:var(--blue);background:var(--bg2);color:var(--text)}
+
+/* Row save indicator */
+.row-save-indicator{font-size:10px;display:flex;align-items:center;gap:3px;
+  white-space:nowrap;transition:all .3s}
+.rsi-saving{color:var(--amber)}
+.rsi-saved{color:var(--green)}
+.rsi-error{color:var(--red)}
 
 /* Computed display */
 .total-cell{font-weight:700;color:var(--blue);font-variant-numeric:tabular-nums}
@@ -144,16 +158,7 @@ td.c{text-align:center}
 .mini-bar{flex:1;height:4px;background:var(--bg3);border-radius:2px;overflow:hidden;min-width:30px}
 .mini-fill-cash{height:100%;background:var(--green);border-radius:2px;transition:width .3s}
 .mini-fill-eq{height:100%;background:var(--amber);border-radius:2px;transition:width .3s}
-
-/* Save bar */
-.save-bar{position:fixed;bottom:0;left:0;right:0;background:var(--bg2);
-  border-top:1px solid var(--border);padding:10px 20px;
-  display:flex;align-items:center;justify-content:space-between;
-  box-shadow:0 -4px 16px rgba(0,0,0,.08);z-index:50}
-.save-status{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text2)}
-.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-.dot-saved{background:var(--green)}
-.dot-unsaved{background:var(--amber)}
+.mini-fill-cash.low{background:var(--red)}
 
 /* HISTORY */
 .hist-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
@@ -163,15 +168,14 @@ td.c{text-align:center}
 .delta{font-size:11px;font-weight:700}
 .pos{color:var(--green)}.neg{color:var(--red)}
 
-/* Detail drawer */
-.detail-row td{background:var(--bg3) !important;padding:0 !important}
-.detail-inner{padding:12px 16px;border-top:2px solid var(--blue)}
+/* Detail modal table */
 .detail-table{width:100%;border-collapse:collapse;font-size:11px}
-.detail-table th{background:var(--navy);color:#fff;padding:6px 10px;text-align:left;font-size:10px}
+.detail-table th{background:var(--navy);color:#fff;padding:6px 10px;text-align:left;font-size:10px;text-transform:uppercase}
 .detail-table th.r{text-align:right}
 .detail-table td{padding:6px 10px;border-bottom:1px solid var(--border)}
 .detail-table td.r{text-align:right;font-variant-numeric:tabular-nums}
 .detail-table tr:last-child td{border-bottom:none}
+.detail-table tr.warn-row td{background:var(--warn-bg)}
 
 /* SETTINGS */
 .set-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
@@ -186,10 +190,9 @@ td.c{text-align:center}
 .acc-item-meta{font-size:11px;color:var(--text2);display:flex;gap:10px;flex-wrap:wrap}
 .acc-item-actions{display:flex;gap:6px;flex-shrink:0}
 
-/* Delete data section */
 .danger-section{background:var(--bg2);border:1px solid var(--red);border-radius:var(--rlg);
   padding:18px;margin-top:6px}
-.danger-section h3{font-size:13px;font-weight:700;margin-bottom:12px;
+.danger-section h3{font-size:13px;font-weight:700;margin-bottom:8px;
   display:flex;align-items:center;gap:6px;color:var(--red)}
 .del-grid{display:grid;grid-template-columns:1fr 1fr auto;gap:10px;align-items:end}
 
@@ -200,6 +203,7 @@ td.c{text-align:center}
 .modal{background:var(--bg2);border-radius:var(--rlg);border:1px solid var(--border2);
   padding:22px;width:480px;max-width:100%;max-height:90vh;overflow-y:auto;
   box-shadow:0 16px 48px rgba(0,0,0,.22)}
+.modal.wide{width:720px}
 .modal h3{font-size:14px;font-weight:700;margin-bottom:16px}
 .m-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}
 .m-grid .full{grid-column:1/-1}
@@ -213,7 +217,7 @@ td.c{text-align:center}
   margin-top:16px;padding-top:14px;border-top:1px solid var(--border)}
 
 /* TOAST */
-.toast{position:fixed;bottom:62px;right:20px;padding:10px 16px;
+.toast{position:fixed;bottom:20px;right:20px;padding:10px 16px;
   border-radius:var(--r);font-size:12px;font-weight:500;
   z-index:500;box-shadow:var(--shadow2);color:#fff;
   animation:slideUp .25s ease;display:none}
@@ -232,14 +236,14 @@ td.c{text-align:center}
 </style>
 </head>
 <body>
-
 <div id="app">
+
   <!-- TOP BAR -->
   <div class="topbar">
     <div class="brand">
       <i class="ti ti-chart-candle" style="font-size:18px"></i>
       SKVK <span class="accent">Margin Availability</span>
-      <span class="vbadge">v1.4</span>
+      <span class="vbadge">v1.5</span>
     </div>
     <div class="topbar-right">
       <span class="topbar-date" id="topDate"></span>
@@ -257,18 +261,20 @@ td.c{text-align:center}
   <div id="panel-entry" class="content">
     <div class="entry-hdr">
       <h2>Daily Margin Entry</h2>
-      <div style="display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text2)">
-        <i class="ti ti-info-circle"></i>
-        Each row has its own date — edit per account independently
+      <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text2)">
+        <i class="ti ti-device-floppy" style="color:var(--green)"></i>
+        Each cell auto-saves on exit &nbsp;|&nbsp;
+        <i class="ti ti-alert-triangle" style="color:var(--amber)"></i>
+        Warning shown when Cash % &lt; 50%
       </div>
     </div>
 
-    <!-- Summary -->
+    <!-- Summary — 3 cards -->
     <div class="sum-strip">
       <div class="scard blue">
         <div class="lbl">Total Available Margin</div>
         <div class="val" id="sAM">₹ —</div>
-        <div class="sub" id="sAMsub">sum of latest per account</div>
+        <div class="sub" id="sAMsub">latest per account</div>
       </div>
       <div class="scard">
         <div class="lbl">Total Collateral Equity</div>
@@ -280,11 +286,6 @@ td.c{text-align:center}
         <div class="val" id="sCash">₹ —</div>
         <div class="sub">Cash component</div>
       </div>
-      <div class="scard amber">
-        <div class="lbl">Overall Cash %</div>
-        <div class="val" id="sCashPct">—</div>
-        <div class="sub">of total margin</div>
-      </div>
     </div>
 
     <!-- Table -->
@@ -292,7 +293,7 @@ td.c{text-align:center}
       <table>
         <thead>
           <tr>
-            <th style="width:160px">Account</th>
+            <th style="width:170px">Account</th>
             <th class="r" style="width:130px">Cash Balance</th>
             <th class="r" style="width:130px">Col. Liquid</th>
             <th class="r" style="width:130px">Col. Equity</th>
@@ -300,28 +301,15 @@ td.c{text-align:center}
             <th class="c" style="width:150px">Cash Component %</th>
             <th class="c" style="width:150px">Non-Cash %</th>
             <th style="width:120px">Date</th>
+            <th style="width:80px">Status</th>
           </tr>
         </thead>
         <tbody id="entryBody">
-          <tr><td colspan="8" style="text-align:center;padding:40px;color:var(--text2)">
+          <tr><td colspan="9" style="text-align:center;padding:40px;color:var(--text2)">
             <i class="ti ti-refresh spin"></i> Loading…
           </td></tr>
         </tbody>
       </table>
-    </div>
-
-    <!-- Save bar -->
-    <div class="save-bar">
-      <div class="save-status">
-        <span class="dot dot-unsaved" id="statusDot"></span>
-        <span id="statusTxt">Loading…</span>
-      </div>
-      <div style="display:flex;gap:8px">
-        <button class="btn" onclick="loadLatest()"><i class="ti ti-refresh"></i> Reload Latest</button>
-        <button class="btn primary" id="saveBtn" onclick="saveAll()">
-          <i class="ti ti-device-floppy"></i> Save All
-        </button>
-      </div>
     </div>
   </div>
 
@@ -332,21 +320,20 @@ td.c{text-align:center}
       <button class="btn" onclick="loadHistory()"><i class="ti ti-refresh"></i> Refresh</button>
     </div>
     <div class="hist-wrap">
-      <table id="histTable">
+      <table>
         <thead>
           <tr>
-            <th style="width:32px"></th>
-            <th>Saved Date</th>
+            <th style="width:36px"></th>
+            <th>Saved At</th>
             <th>Accounts</th>
             <th class="r">Cash + Liquid</th>
             <th class="r">Col. Equity</th>
             <th class="r">Total Margin</th>
-            <th class="r">Day Change</th>
-            <th>Saved At</th>
+            <th class="r">Change</th>
           </tr>
         </thead>
         <tbody id="histBody">
-          <tr><td colspan="8" style="text-align:center;padding:30px;color:var(--text2)">Loading…</td></tr>
+          <tr><td colspan="7" style="text-align:center;padding:30px;color:var(--text2)">Loading…</td></tr>
         </tbody>
       </table>
     </div>
@@ -360,27 +347,29 @@ td.c{text-align:center}
     </div>
     <div class="acc-list" id="accList"></div>
 
-    <!-- Delete Old Data -->
     <div class="danger-section">
       <h3><i class="ti ti-trash"></i> Delete Old Data</h3>
       <p style="font-size:12px;color:var(--text2);margin-bottom:12px">
-        Permanently delete saved entries before a selected date. This cannot be undone.
+        Permanently delete saved history entries. This cannot be undone.
       </p>
       <div class="del-grid">
         <div class="mf">
-          <label>Delete entries before</label>
-          <input type="date" id="delBefore" style="height:36px;padding:0 10px;border-radius:var(--r);border:1px solid var(--border2);background:var(--bg);color:var(--text);font-size:13px;font-family:inherit">
+          <label>Delete entries saved before</label>
+          <input type="date" id="delBefore"
+            style="height:36px;padding:0 10px;border-radius:var(--r);border:1px solid var(--border2);
+                   background:var(--bg);color:var(--text);font-size:13px;font-family:inherit">
         </div>
         <div class="mf">
           <label>&nbsp;</label>
-          <button class="btn danger lg" onclick="deleteOldData()" style="height:36px">
-            <i class="ti ti-trash"></i> Delete Selected Range
+          <button class="btn danger" style="height:36px" onclick="deleteOldData()">
+            <i class="ti ti-trash"></i> Delete Before Date
           </button>
         </div>
         <div class="mf">
           <label>&nbsp;</label>
-          <button class="btn danger lg" onclick="deleteAllData()" style="height:36px;border-color:var(--red);background:var(--red);color:#fff">
-            <i class="ti ti-alert-triangle"></i> Delete ALL Data
+          <button class="btn" style="height:36px;background:var(--red);color:#fff;border-color:var(--red)"
+            onclick="deleteAllData()">
+            <i class="ti ti-alert-triangle"></i> Delete ALL
           </button>
         </div>
       </div>
@@ -399,8 +388,7 @@ td.c{text-align:center}
           <option>Zebu</option><option>Shoonya</option><option>Jainam</option>
           <option>IIFL</option><option>Zerodha</option><option>AliceBlue</option>
           <option>Upstox</option><option>Other</option>
-        </select>
-      </div>
+        </select></div>
       <div class="mf"><label>Client ID</label>
         <input type="text" id="m_clientId" placeholder="e.g. Z67916"></div>
       <div class="mf"><label>Nickname *</label>
@@ -412,18 +400,20 @@ td.c{text-align:center}
     </div>
     <div class="mfooter">
       <button class="btn" onclick="closeModal()">Cancel</button>
-      <button class="btn navy" onclick="saveAccount()"><i class="ti ti-check"></i> Save Account</button>
+      <button class="btn navy" onclick="saveAccount()"><i class="ti ti-check"></i> Save</button>
     </div>
   </div>
 </div>
 
 <!-- History Detail Modal -->
 <div class="modal-bg" id="detailModalBg">
-  <div class="modal" style="width:700px">
+  <div class="modal wide">
     <h3 id="detailModalTitle">Entry Detail</h3>
-    <div id="detailModalBody"></div>
+    <div style="overflow-x:auto">
+      <div id="detailModalBody"></div>
+    </div>
     <div class="mfooter">
-      <button class="btn" onclick="closeDetailModal()">Close</button>
+      <button class="btn" onclick="document.getElementById('detailModalBg').classList.remove('open')">Close</button>
     </div>
   </div>
 </div>
@@ -444,22 +434,30 @@ var FIREBASE_CONFIG = {
 
 // ══ GLOBALS ══
 var db;
-var accounts   = {};
-// latestPerAccount: { accountId: { cash, collateralEquity, collateralLiquid, date, savedAt } }
-var latestPerAccount = {};
-var editId = null;
+var accounts         = {};
+var latestPerAccount = {};  // { accId: { cash, collateralEquity, collateralLiquid, date, savedAt } }
+var editId           = null;
+var histData         = [];
+var saveTimers       = {};  // debounce timers per account
 
 // ══ BOOT ══
 (function boot(){
   try{ firebase.initializeApp(FIREBASE_CONFIG); }catch(e){}
   db = firebase.database();
+
   document.getElementById('topDate').textContent =
     new Date().toLocaleDateString('en-IN',{weekday:'short',day:'2-digit',month:'short',year:'numeric'});
 
+  // Accounts subscription — only renders table, does NOT overwrite entered data
   db.ref('margin/accounts').on('value', snap=>{
     accounts = snap.val()||{};
     renderAccList();
-    loadLatest();
+    // Only render table on first load (latestPerAccount is empty)
+    if(Object.keys(latestPerAccount).length === 0){
+      loadLatest();
+    } else {
+      renderTable(); // re-render structure but keep data intact
+    }
   });
 })();
 
@@ -473,92 +471,109 @@ function goTab(t){
   if(t==='settings') renderAccList();
 }
 
-// ══ LOAD LATEST PER ACCOUNT ══
-// For each account, find its most recent saved entry across all daily saves
+// ══ LOAD LATEST (only on page boot) ══
 async function loadLatest(){
   try{
     var snap = await db.ref('margin/accounts_latest').once('value');
-    var data = snap.val()||{};
-    latestPerAccount = data;
+    latestPerAccount = snap.val()||{};
     renderTable();
-    markSaved('Showing latest data per account');
   }catch(e){ toast('Load error: '+e.message,true); }
 }
 
-// ══ RENDER TABLE ══
+// ══ RENDER TABLE — never resets inputs that are focused ══
 function renderTable(){
   var tb   = document.getElementById('entryBody');
   var list = Object.entries(accounts);
+
   if(!list.length){
-    tb.innerHTML=`<tr><td colspan="8"><div class="empty">
+    tb.innerHTML=`<tr><td colspan="9"><div class="empty">
       <i class="ti ti-building-bank"></i><h3>No accounts configured</h3>
       <p>Go to <strong>Settings</strong> to add broker accounts.</p></div></td></tr>`;
     updateSummary(); return;
   }
 
   var today = new Date().toISOString().slice(0,10);
+
   var rows = list.map(([id,a])=>{
     var e    = latestPerAccount[id]||{};
-    var cash = e.cash             !==undefined ? e.cash             : '';
-    var ce   = e.collateralEquity !==undefined ? e.collateralEquity : '';
-    var cl   = e.collateralLiquid !==undefined ? e.collateralLiquid : '';
-    var date = e.date || today;
+    var cash = e.cash             !==undefined ? parseFloat(e.cash).toFixed(2)             : '';
+    var ce   = e.collateralEquity !==undefined ? parseFloat(e.collateralEquity).toFixed(2) : '';
+    var cl   = e.collateralLiquid !==undefined ? parseFloat(e.collateralLiquid).toFixed(2) : '';
+    var date = e.date||today;
 
     var cashN=parseFloat(cash)||0, ceN=parseFloat(ce)||0, clN=parseFloat(cl)||0;
-    var am = cashN+ceN+clN;
-    var cashComp = am>0?((cashN+clN)/am*100):0;
-    var eqComp   = am>0?(ceN/am*100):0;
+    var am=cashN+ceN+clN;
+    var cashComp=am>0?((cashN+clN)/am*100):0;
+    var eqComp  =am>0?(ceN/am*100):0;
+    var isWarn  = am>0 && cashComp<50;
 
-    return `<tr>
+    return `<tr id="row_${id}" class="${isWarn?'warn-row':''}">
       <td>
         <div class="acc-cell">
-          <div class="acc-name">${esc(a.broker||'')} — ${esc(a.nickname||'')}</div>
+          <div class="acc-name">
+            ${isWarn?'<i class="ti ti-alert-triangle warn-icon" title="Cash component below 50%"></i>':''}
+            ${esc(a.broker||'')} — ${esc(a.nickname||'')}
+          </div>
           <div class="acc-sub">${esc(a.clientId||'')}${a.system?' · '+esc(a.system.slice(0,22)):''}</div>
         </div>
       </td>
       <td class="r">
         <input type="number" step="0.01" class="cell-input"
-          id="f_cash_${id}" value="${cash!==''?parseFloat(cash).toFixed(2):''}" placeholder="0.00"
-          oninput="onInput('${id}','cash',this.value)">
+          id="f_cash_${id}" value="${cash}" placeholder="0.00"
+          oninput="onInput('${id}','cash',this.value)"
+          onblur="onBlurSave('${id}')">
       </td>
       <td class="r">
         <input type="number" step="0.01" class="cell-input"
-          id="f_cl_${id}" value="${cl!==''?parseFloat(cl).toFixed(2):''}" placeholder="0.00"
-          oninput="onInput('${id}','collateralLiquid',this.value)">
+          id="f_cl_${id}" value="${cl}" placeholder="0.00"
+          oninput="onInput('${id}','collateralLiquid',this.value)"
+          onblur="onBlurSave('${id}')">
       </td>
       <td class="r">
         <input type="number" step="0.01" class="cell-input"
-          id="f_ce_${id}" value="${ce!==''?parseFloat(ce).toFixed(2):''}" placeholder="0.00"
-          oninput="onInput('${id}','collateralEquity',this.value)">
+          id="f_ce_${id}" value="${ce}" placeholder="0.00"
+          oninput="onInput('${id}','collateralEquity',this.value)"
+          onblur="onBlurSave('${id}')">
       </td>
       <td class="r">
         <span class="total-cell" id="am_${id}">${am>0?inr2(am):'—'}</span>
       </td>
       <td class="c">
         <div class="pct-wrap" id="cashcomp_${id}">
-          ${am>0?`<div class="mini-bar"><div class="mini-fill-cash" style="width:${cashComp}%"></div></div>
-          <span class="cash-pct">${cashComp.toFixed(2)}%</span>`:'<span style="color:var(--text3)">—</span>'}
+          ${am>0
+            ?`<div class="mini-bar"><div class="mini-fill-cash${isWarn?' low':''}" style="width:${cashComp}%"></div></div>
+              <span class="cash-pct" style="${isWarn?'color:var(--red)':''}">${cashComp.toFixed(2)}%</span>`
+            :'<span style="color:var(--text3)">—</span>'}
         </div>
       </td>
       <td class="c">
         <div class="pct-wrap" id="eqcomp_${id}">
-          ${am>0?`<div class="mini-bar"><div class="mini-fill-eq" style="width:${eqComp}%"></div></div>
-          <span class="eq-pct">${eqComp.toFixed(2)}%</span>`:'<span style="color:var(--text3)">—</span>'}
+          ${am>0
+            ?`<div class="mini-bar"><div class="mini-fill-eq" style="width:${eqComp}%"></div></div>
+              <span class="eq-pct">${eqComp.toFixed(2)}%</span>`
+            :'<span style="color:var(--text3)">—</span>'}
         </div>
       </td>
       <td>
         <input type="date" class="row-date-input" id="f_date_${id}" value="${date}"
-          title="Date for this account entry">
+          onchange="onDateChange('${id}',this.value)">
+      </td>
+      <td id="rsi_${id}">
+        ${e.savedAt
+          ?`<div class="row-save-indicator rsi-saved">
+              <i class="ti ti-check"></i>
+              ${new Date(e.savedAt).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})}
+            </div>`
+          :'<div class="row-save-indicator" style="color:var(--text3)">—</div>'}
       </td>
     </tr>`;
   }).join('');
 
-  // Total row
-  var tots = calcTotals();
-  var tcPct = tots.am>0?((tots.cash+tots.cl)/tots.am*100).toFixed(2):'—';
-  var tePct = tots.am>0?(tots.ce/tots.am*100).toFixed(2):'—';
-
-  rows += `<tr class="total-row">
+  // Totals row
+  var tots=calcTotals();
+  var tcPct=tots.am>0?((tots.cash+tots.cl)/tots.am*100).toFixed(2):'—';
+  var tePct=tots.am>0?(tots.ce/tots.am*100).toFixed(2):'—';
+  rows+=`<tr class="total-row">
     <td><strong>TOTAL</strong></td>
     <td class="r">${inr2(tots.cash)}</td>
     <td class="r">${inr2(tots.cl)}</td>
@@ -566,56 +581,126 @@ function renderTable(){
     <td class="r" style="color:#64b5f6;font-size:13px">${inr2(tots.am)}</td>
     <td class="c" style="color:#81c784">${tcPct}%</td>
     <td class="c" style="color:#ffb74d">${tePct}%</td>
-    <td></td>
+    <td colspan="2"></td>
   </tr>`;
 
   tb.innerHTML = rows;
   updateSummary();
 }
 
-// ══ INPUT HANDLER ══
+// ══ INPUT — only updates local state, NO re-render ══
 function onInput(id, field, val){
   if(!latestPerAccount[id]) latestPerAccount[id]={};
-  latestPerAccount[id][field] = val===''?'':(parseFloat(val)||0);
+  latestPerAccount[id][field] = val===''?0:(parseFloat(val)||0);
 
-  var e    = latestPerAccount[id];
+  // Update only the computed cells for this row — never re-render table
+  recalcRow(id);
+  updateSummary();
+  refreshTotalRow();
+}
+
+function onDateChange(id, val){
+  if(!latestPerAccount[id]) latestPerAccount[id]={};
+  latestPerAccount[id].date = val;
+}
+
+// ══ ON BLUR — auto-save this single account ══
+async function onBlurSave(id){
+  // Small delay so if user is tabbing between cells of same row, we don't save mid-entry
+  clearTimeout(saveTimers[id]);
+  saveTimers[id] = setTimeout(()=>saveAccount_row(id), 600);
+}
+
+async function saveAccount_row(id){
+  var rsi = document.getElementById('rsi_'+id);
+  if(rsi) rsi.innerHTML='<div class="row-save-indicator rsi-saving"><i class="ti ti-refresh spin"></i> Saving…</div>';
+
+  var e    = latestPerAccount[id]||{};
+  var date = document.getElementById('f_date_'+id)?.value || new Date().toISOString().slice(0,10);
+  var now  = Date.now();
+
+  var payload = {
+    cash:             parseFloat(e.cash)||0,
+    collateralEquity: parseFloat(e.collateralEquity)||0,
+    collateralLiquid: parseFloat(e.collateralLiquid)||0,
+    date, savedAt: now
+  };
+
+  try{
+    // Save latest for this account
+    await db.ref('margin/accounts_latest/'+id).set(payload);
+    latestPerAccount[id] = payload;
+
+    // Save history snapshot
+    var snapKey = now+'_'+id;
+    var tots = calcTotals();
+    await db.ref('margin/history/'+snapKey).set({
+      savedAt: now,
+      accountId: id,
+      entry: payload,
+      totals:{ cash:tots.cash, collateral:tots.ce, collateralLiquid:tots.cl, available:tots.am }
+    });
+
+    var tStr = new Date(now).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+    if(rsi) rsi.innerHTML=`<div class="row-save-indicator rsi-saved"><i class="ti ti-check"></i> ${tStr}</div>`;
+  }catch(err){
+    if(rsi) rsi.innerHTML='<div class="row-save-indicator rsi-error"><i class="ti ti-x"></i> Error</div>';
+    toast('Save error: '+err.message, true);
+  }
+}
+
+// ══ RECALC ROW (no re-render) ══
+function recalcRow(id){
+  var e    = latestPerAccount[id]||{};
   var cash = parseFloat(e.cash)||0;
   var ce   = parseFloat(e.collateralEquity)||0;
   var cl   = parseFloat(e.collateralLiquid)||0;
   var am   = cash+ce+cl;
-
-  var amEl = document.getElementById('am_'+id);
-  if(amEl) amEl.textContent = am>0?inr2(am):'—';
-
   var cashComp = am>0?((cash+cl)/am*100):0;
   var eqComp   = am>0?(ce/am*100):0;
+  var isWarn   = am>0 && cashComp<50;
 
+  // Total cell
+  var amEl=document.getElementById('am_'+id);
+  if(amEl) amEl.textContent=am>0?inr2(am):'—';
+
+  // Cash % cell
   var ccEl=document.getElementById('cashcomp_'+id);
-  var ecEl=document.getElementById('eqcomp_'+id);
-  if(ccEl) ccEl.innerHTML = am>0
-    ?`<div class="mini-bar"><div class="mini-fill-cash" style="width:${cashComp}%"></div></div>
-      <span class="cash-pct">${cashComp.toFixed(2)}%</span>`
+  if(ccEl) ccEl.innerHTML=am>0
+    ?`<div class="mini-bar"><div class="mini-fill-cash${isWarn?' low':''}" style="width:${cashComp}%"></div></div>
+      <span class="cash-pct" style="${isWarn?'color:var(--red)':''}">${cashComp.toFixed(2)}%</span>`
     :'<span style="color:var(--text3)">—</span>';
-  if(ecEl) ecEl.innerHTML = am>0
+
+  // Eq % cell
+  var ecEl=document.getElementById('eqcomp_'+id);
+  if(ecEl) ecEl.innerHTML=am>0
     ?`<div class="mini-bar"><div class="mini-fill-eq" style="width:${eqComp}%"></div></div>
       <span class="eq-pct">${eqComp.toFixed(2)}%</span>`
     :'<span style="color:var(--text3)">—</span>';
 
-  refreshTotalRow();
-  updateSummary();
-  markUnsaved();
+  // Row warning
+  var row=document.getElementById('row_'+id);
+  if(row){
+    row.classList.toggle('warn-row', isWarn);
+    var nameEl=row.querySelector('.acc-name');
+    if(nameEl){
+      var a=accounts[id]||{};
+      nameEl.innerHTML=(isWarn?'<i class="ti ti-alert-triangle warn-icon" title="Cash component below 50%"></i> ':'')+
+        esc(a.broker||'')+' — '+esc(a.nickname||'');
+    }
+  }
 }
 
+// ══ TOTALS ══
 function calcTotals(){
-  var cash=0,ce=0,cl=0,am=0;
+  var cash=0,ce=0,cl=0;
   Object.keys(accounts).forEach(id=>{
     var e=latestPerAccount[id]||{};
     cash+=parseFloat(e.cash)||0;
     ce  +=parseFloat(e.collateralEquity)||0;
     cl  +=parseFloat(e.collateralLiquid)||0;
   });
-  am=cash+ce+cl;
-  return{cash,ce,cl,am};
+  return{cash,ce,cl,am:cash+ce+cl};
 }
 
 function refreshTotalRow(){
@@ -634,128 +719,88 @@ function refreshTotalRow(){
 
 function updateSummary(){
   var tots=calcTotals();
-  var cashPct=tots.am>0?((tots.cash+tots.cl)/tots.am*100).toFixed(2):'—';
-  document.getElementById('sAM').textContent     = inr2(tots.am);
-  document.getElementById('sCol').textContent    = inr2(tots.ce);
-  document.getElementById('sCash').textContent   = inr2(tots.cash+tots.cl);
-  document.getElementById('sCashPct').textContent= cashPct+(cashPct!=='—'?'%':'');
-}
-
-function markUnsaved(){
-  document.getElementById('statusDot').className='dot dot-unsaved';
-  document.getElementById('statusTxt').textContent='Unsaved changes';
-}
-function markSaved(msg){
-  document.getElementById('statusDot').className='dot dot-saved';
-  document.getElementById('statusTxt').textContent=msg||'Saved';
-}
-
-// ══ SAVE ALL ══
-async function saveAll(){
-  var btn=document.getElementById('saveBtn');
-  btn.disabled=true; btn.innerHTML='<i class="ti ti-refresh spin"></i> Saving…';
-
-  var list=Object.entries(accounts);
-  var now=Date.now();
-  var saveKey = new Date().toISOString().slice(0,10).replace(/-/g,'')+'_'+now;
-
-  // Build per-account latest updates
-  var latestUpdates={};
-  list.forEach(([id])=>{
-    var e    = latestPerAccount[id]||{};
-    var date = document.getElementById('f_date_'+id)?.value || new Date().toISOString().slice(0,10);
-    latestUpdates[id]={
-      cash:             parseFloat(e.cash)||0,
-      collateralEquity: parseFloat(e.collateralEquity)||0,
-      collateralLiquid: parseFloat(e.collateralLiquid)||0,
-      date, savedAt: now
-    };
-  });
-
-  var tots=calcTotals();
-  // Save snapshot to history
-  var histPayload={
-    savedAt: now,
-    entries: latestUpdates,
-    totals:{ cash:tots.cash, collateral:tots.ce, collateralLiquid:tots.cl, available:tots.am }
-  };
-
-  try{
-    // Save latest per account (for landing page)
-    await db.ref('margin/accounts_latest').set(latestUpdates);
-    // Save history snapshot
-    await db.ref('margin/history/'+saveKey).set(histPayload);
-    var tStr=new Date(now).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
-    markSaved('Saved at '+tStr);
-    toast('All entries saved ✓');
-    // Update local state with dates
-    latestPerAccount=latestUpdates;
-  }catch(e){ toast('Save failed: '+e.message,true); }
-
-  btn.disabled=false; btn.innerHTML='<i class="ti ti-device-floppy"></i> Save All';
+  document.getElementById('sAM').textContent  = inr2(tots.am);
+  document.getElementById('sCol').textContent = inr2(tots.ce);
+  document.getElementById('sCash').textContent= inr2(tots.cash+tots.cl);
+  var n=Object.keys(accounts).length;
+  document.getElementById('sAMsub').textContent=n+' account'+(n!==1?'s':'')+' configured';
 }
 
 // ══ HISTORY ══
-var histData=[];
 async function loadHistory(){
   var tb=document.getElementById('histBody');
-  tb.innerHTML='<tr><td colspan="8" style="text-align:center;padding:26px;color:var(--text2)"><i class="ti ti-refresh spin"></i> Loading…</td></tr>';
+  tb.innerHTML='<tr><td colspan="7" style="text-align:center;padding:26px;color:var(--text2)"><i class="ti ti-refresh spin"></i> Loading…</td></tr>';
   try{
-    var snap=await db.ref('margin/history').orderByKey().limitToLast(60).once('value');
+    var snap=await db.ref('margin/history').orderByKey().limitToLast(100).once('value');
     var raw=snap.val()||{};
-    histData=Object.entries(raw).map(([k,v])=>({key:k,...v})).sort((a,b)=>b.savedAt-a.savedAt);
+    // Group by day for summary display
+    var byDay={};
+    Object.entries(raw).forEach(([k,v])=>{
+      var d=new Date(v.savedAt).toISOString().slice(0,10);
+      if(!byDay[d]||v.savedAt>byDay[d].savedAt) byDay[d]={...v,key:k};
+    });
+    histData=Object.values(byDay).sort((a,b)=>b.savedAt-a.savedAt);
     if(!histData.length){
-      tb.innerHTML='<tr><td colspan="8" style="text-align:center;padding:30px;color:var(--text2)">No history yet.</td></tr>';
+      tb.innerHTML='<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--text2)">No history yet.</td></tr>';
       return;
     }
     tb.innerHTML=histData.map((r,i)=>{
       var prev=histData[i+1];
-      var delta=prev?r.totals.available-prev.totals.available:null;
+      var delta=prev&&r.totals&&prev.totals?r.totals.available-prev.totals.available:null;
       var dTxt=delta!==null
         ?`<span class="delta ${delta>=0?'pos':'neg'}">${delta>=0?'+':''}${inr2(delta)}</span>`:'—';
-      var tStr=new Date(r.savedAt).toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
-      var cashLiq=(r.totals.cash||0)+(r.totals.collateralLiquid||0);
-      var accCount=Object.keys(r.entries||{}).length;
+      var tStr=new Date(r.savedAt).toLocaleString('en-IN',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+      var cashLiq=(r.totals?.cash||0)+(r.totals?.collateralLiquid||0);
       return `<tr>
-        <td><button class="btn sm" onclick="showDetail(${i})" title="View breakdown">
-          <i class="ti ti-eye"></i></button></td>
+        <td><button class="btn sm" onclick="showDetail(${i})"><i class="ti ti-eye"></i></button></td>
         <td><strong>${tStr}</strong></td>
-        <td>${accCount}</td>
+        <td>${r.entry?1:Object.keys(r.entries||{}).length}</td>
         <td class="r">${inr2(cashLiq)}</td>
-        <td class="r">${inr2(r.totals.collateral||0)}</td>
-        <td class="r" style="font-weight:700;color:var(--blue)">${inr2(r.totals.available||0)}</td>
+        <td class="r">${inr2(r.totals?.collateral||0)}</td>
+        <td class="r" style="font-weight:700;color:var(--blue)">${inr2(r.totals?.available||0)}</td>
         <td class="r">${dTxt}</td>
-        <td style="color:var(--text2);font-size:11px">${accCount} accounts</td>
       </tr>`;
     }).join('');
   }catch(e){
-    tb.innerHTML=`<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--red)">Error: ${e.message}</td></tr>`;
+    tb.innerHTML=`<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--red)">Error: ${e.message}</td></tr>`;
   }
 }
 
-function showDetail(idx){
-  var r=histData[idx];
-  if(!r) return;
+async function showDetail(idx){
+  var r=histData[idx]; if(!r) return;
   var tStr=new Date(r.savedAt).toLocaleString('en-IN',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
-  document.getElementById('detailModalTitle').textContent='Entry — '+tStr;
-  var entries=r.entries||{};
+  document.getElementById('detailModalTitle').textContent='Snapshot — '+tStr;
+
+  // Load full snapshot from accounts_latest at that time, or use entries
+  var entries = r.entries || (r.entry && r.accountId ? {[r.accountId]: r.entry} : {});
+
+  // If single-account snapshot, supplement with latest other accounts
+  if(r.accountId && Object.keys(entries).length===1){
+    // Show full latest accounts_latest for context
+    var snap=await db.ref('margin/accounts_latest').once('value');
+    var allLatest=snap.val()||{};
+    entries=allLatest;
+  }
+
   var rows=Object.entries(entries).map(([id,e])=>{
     var a=accounts[id]||{};
-    var cash=parseFloat(e.cash)||0, ce=parseFloat(e.collateralEquity)||0, cl=parseFloat(e.collateralLiquid)||0;
+    var cash=parseFloat(e.cash)||0,ce=parseFloat(e.collateralEquity)||0,cl=parseFloat(e.collateralLiquid)||0;
     var am=cash+ce+cl;
     var cashPct=am>0?((cash+cl)/am*100).toFixed(2):'—';
     var eqPct  =am>0?(ce/am*100).toFixed(2):'—';
-    return `<tr>
-      <td>${esc(a.broker||'')} — ${esc(a.nickname||id)}</td>
+    var isWarn =am>0&&parseFloat(cashPct)<50;
+    return `<tr class="${isWarn?'warn-row':''}">
+      <td>${isWarn?'⚠️ ':''} ${esc(a.broker||'')} — ${esc(a.nickname||id)}</td>
       <td class="r">${inr2(cash)}</td>
       <td class="r">${inr2(cl)}</td>
       <td class="r">${inr2(ce)}</td>
       <td class="r" style="font-weight:700;color:var(--blue)">${inr2(am)}</td>
-      <td class="r" style="color:var(--green)">${cashPct}%</td>
+      <td class="r" style="color:${isWarn?'var(--red)':'var(--green)'}">${cashPct}%</td>
       <td class="r" style="color:var(--amber)">${eqPct}%</td>
       <td style="font-size:10px;color:var(--text3)">${e.date||'—'}</td>
     </tr>`;
   }).join('');
+
   document.getElementById('detailModalBody').innerHTML=`
     <table class="detail-table">
       <thead><tr>
@@ -763,12 +808,9 @@ function showDetail(idx){
         <th class="r">Col.Equity</th><th class="r">Total</th>
         <th class="r">Cash%</th><th class="r">NonCash%</th><th>Date</th>
       </tr></thead>
-      <tbody>${rows}</tbody>
+      <tbody>${rows||'<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--text2)">No detail available</td></tr>'}</tbody>
     </table>`;
   document.getElementById('detailModalBg').classList.add('open');
-}
-function closeDetailModal(){
-  document.getElementById('detailModalBg').classList.remove('open');
 }
 
 // ══ SETTINGS ══
@@ -811,6 +853,7 @@ function openModal(id){
   document.getElementById('modalBg').classList.add('open');
 }
 function closeModal(){document.getElementById('modalBg').classList.remove('open');editId=null;}
+
 async function saveAccount(){
   var broker=document.getElementById('m_broker').value.trim();
   var nick  =document.getElementById('m_nick').value.trim();
@@ -821,23 +864,23 @@ async function saveAccount(){
   var obj={broker,clientId:cid,nickname:nick,capital:cap,system:sys,updAt:Date.now()};
   try{
     if(editId){await db.ref('margin/accounts/'+editId).update(obj);toast('Updated ✓');}
-    else      {await db.ref('margin/accounts').push(obj);toast('Account added ✓');}
+    else{await db.ref('margin/accounts').push(obj);toast('Account added ✓');}
     closeModal();
   }catch(e){toast('Error: '+e.message,true);}
 }
+
 async function delAccount(id){
   if(!confirm('Delete this account?')) return;
   try{await db.ref('margin/accounts/'+id).remove();toast('Deleted');}
   catch(e){toast('Error: '+e.message,true);}
 }
 
-// ══ DELETE OLD DATA ══
 async function deleteOldData(){
   var before=document.getElementById('delBefore').value;
   if(!before){toast('Select a date first',true);return;}
-  if(!confirm('Delete all history entries saved before '+fmtDate(before)+'? This cannot be undone.')) return;
+  if(!confirm('Delete all history entries saved before '+fmtDate(before)+'?')) return;
   try{
-    var snap=await db.ref('margin/history').orderByKey().once('value');
+    var snap=await db.ref('margin/history').once('value');
     var raw=snap.val()||{};
     var beforeTs=new Date(before).getTime();
     var toDelete=Object.entries(raw).filter(([k,v])=>v.savedAt<beforeTs).map(([k])=>k);
@@ -846,17 +889,15 @@ async function deleteOldData(){
     toDelete.forEach(k=>updates['margin/history/'+k]=null);
     await db.ref().update(updates);
     toast(toDelete.length+' entries deleted ✓');
-    loadHistory();
   }catch(e){toast('Error: '+e.message,true);}
 }
 
 async function deleteAllData(){
-  if(!confirm('⚠️ Delete ALL history data? This cannot be undone.')) return;
-  if(!confirm('Are you absolutely sure? All saved entries will be permanently deleted.')) return;
+  if(!confirm('⚠️ Delete ALL history? Cannot be undone.')) return;
+  if(!confirm('Absolutely sure? All saved history will be gone.')) return;
   try{
     await db.ref('margin/history').remove();
     toast('All history deleted');
-    loadHistory();
   }catch(e){toast('Error: '+e.message,true);}
 }
 
@@ -865,7 +906,7 @@ function inr2(n){
   if(n===null||n===undefined||isNaN(n)||n==='') return '—';
   var neg=n<0; n=Math.abs(n);
   var parts=n.toFixed(2).split('.');
-  var s=parts[0], dec=parts[1], r='';
+  var s=parts[0],dec=parts[1],r='';
   if(s.length>3){r=','+s.slice(-3);s=s.slice(0,-3);
     while(s.length>2){r=','+s.slice(-2)+r;s=s.slice(0,-2);}r=s+r;}
   else r=s;
