@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SKVK Margin Availability v1.7</title>
+<title>SKVK Margin Availability v1.8</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.34.0/dist/tabler-icons.min.css">
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
@@ -85,10 +85,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,sans-seri
   text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px}
 .scard .val{font-size:18px;font-weight:800}
 .scard .sub{font-size:10px;color:var(--text3);margin-top:2px}
-.scard.blue  .val{color:var(--blue)}
-.scard.green .val{color:var(--green)}
-.scard.teal  .val{color:#0d7377}
-.scard.amber .val{color:var(--amber)}
+.scard.blue  .val{color:#1565c0}
+.scard.green .val{color:#0d7a3e}
+.scard.lemon .val{color:#84cc16}
+.scard.amber .val{color:#d97706}
 
 /* ENTRY TABLE */
 .entry-hdr{display:flex;align-items:center;justify-content:space-between;
@@ -258,7 +258,7 @@ td.c{text-align:center}
     <div class="brand">
       <i class="ti ti-chart-candle" style="font-size:18px"></i>
       SKVK <span class="accent">Margin Availability</span>
-      <span class="vbadge">v1.7</span>
+      <span class="vbadge">v1.8</span>
     </div>
     <div class="topbar-right">
       <span class="topbar-date" id="topDate"></span>
@@ -289,12 +289,12 @@ td.c{text-align:center}
         <div class="val" id="sAM">₹ —</div>
         <div class="sub" id="sAMsub">—</div>
       </div>
-      <div class="scard">
+      <div class="scard amber">
         <div class="lbl">Total Collateral Equity</div>
         <div class="val" id="sCol">₹ —</div>
         <div class="sub">Non-cash pledged</div>
       </div>
-      <div class="scard teal">
+      <div class="scard lemon">
         <div class="lbl">Total Collateral Liquid</div>
         <div class="val" id="sLiq">₹ —</div>
         <div class="sub">Liquid / LiquidBees</div>
@@ -590,8 +590,8 @@ function renderTable(){
     <td class="r">${inr2(tots.cl)}</td>
     <td class="r">${inr2(tots.ce)}</td>
     <td class="r" style="color:#64b5f6;font-size:13px">${inr2(tots.am)}</td>
-    <td class="c"><span style="color:#81c784">${tcPct}${tcPct!=='—'?'%':''}</span></td>
-    <td class="c"><span style="color:#ffb74d">${tePct}${tePct!=='—'?'%':''}</span></td>
+    <td class="c"></td>
+    <td class="c"></td>
     <td></td>
   </tr>`;
 
@@ -727,8 +727,8 @@ function refreshTotalRow(){
   tr.cells[2].textContent=inr2(tots.cl);
   tr.cells[3].textContent=inr2(tots.ce);
   tr.cells[4].innerHTML=`<span style="color:#64b5f6;font-size:13px">${inr2(tots.am)}</span>`;
-  tr.cells[5].innerHTML=`<span style="color:#81c784">${tcPct}${tcPct!=='—'?'%':''}</span>`;
-  tr.cells[6].innerHTML=`<span style="color:#ffb74d">${tePct}${tePct!=='—'?'%':''}</span>`;
+  tr.cells[5].innerHTML='';
+  tr.cells[6].innerHTML='';
 }
 
 function updateSummary(){
