@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SKVK Margin Availability v1.6</title>
+<title>SKVK Margin Availability v1.7</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.34.0/dist/tabler-icons.min.css">
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
@@ -147,14 +147,13 @@ td.c{text-align:center}
   border-radius:6px;border:1px solid transparent;
   background:transparent;color:var(--text);
   font-size:12px;font-family:inherit;text-align:right;
-  font-weight:700;  /* bold cash column handled per-column */
   transition:all .15s;cursor:pointer}
 .cell-input:hover{border-color:var(--border2);background:var(--bg2)}
 .cell-input:focus{outline:none;border-color:var(--blue);
   background:var(--bg2);box-shadow:0 0 0 2px rgba(21,101,192,.1);cursor:text}
 
-/* Cash balance input — bold */
-.cell-input.cash-input{font-weight:700}
+/* Cash balance input — normal weight (same as others) */
+.cell-input.cash-input{font-weight:normal}
 
 /* Row date input */
 .row-date-input{width:105px;height:28px;padding:0 4px;
@@ -259,7 +258,7 @@ td.c{text-align:center}
     <div class="brand">
       <i class="ti ti-chart-candle" style="font-size:18px"></i>
       SKVK <span class="accent">Margin Availability</span>
-      <span class="vbadge">v1.6</span>
+      <span class="vbadge">v1.7</span>
     </div>
     <div class="topbar-right">
       <span class="topbar-date" id="topDate"></span>
@@ -522,10 +521,9 @@ function renderTable(){
     var eqComp   = am>0?(ce/am*100):0;
     var isWarn   = am>0 && cashComp<50;
 
-    // Display values: show formatted number in input (user sees Indian format)
-    var cashDisp = cash>0 ? cash.toFixed(2) : '';
-    var ceDisp   = ce>0   ? ce.toFixed(2)   : '';
-    var clDisp   = cl>0   ? cl.toFixed(2)   : '';
+    var cashDisp = cash>0 ? fmtInput(cash) : '';
+    var ceDisp   = ce>0   ? fmtInput(ce)   : '';
+    var clDisp   = cl>0   ? fmtInput(cl)   : '';
 
     return `<tr id="row_${id}" class="${isWarn?'warn-row':''}">
       <td>
@@ -538,22 +536,22 @@ function renderTable(){
         </div>
       </td>
       <td class="r">
-        <input type="number" step="0.01" class="cell-input cash-input"
+        <input type="text" inputmode="decimal" class="cell-input cash-input"
           id="f_cash_${id}" value="${cashDisp}" placeholder="0.00"
-          oninput="onInput('${id}','cash',this.value)"
-          onblur="onBlurSave('${id}')">
+          onfocus="onFocusInput(this,'${id}','cash')"
+          onblur="onBlurInput(this,'${id}','cash')">
       </td>
       <td class="r">
-        <input type="number" step="0.01" class="cell-input"
+        <input type="text" inputmode="decimal" class="cell-input"
           id="f_cl_${id}" value="${clDisp}" placeholder="0.00"
-          oninput="onInput('${id}','collateralLiquid',this.value)"
-          onblur="onBlurSave('${id}')">
+          onfocus="onFocusInput(this,'${id}','collateralLiquid')"
+          onblur="onBlurInput(this,'${id}','collateralLiquid')">
       </td>
       <td class="r">
-        <input type="number" step="0.01" class="cell-input"
+        <input type="text" inputmode="decimal" class="cell-input"
           id="f_ce_${id}" value="${ceDisp}" placeholder="0.00"
-          oninput="onInput('${id}','collateralEquity',this.value)"
-          onblur="onBlurSave('${id}')">
+          onfocus="onFocusInput(this,'${id}','collateralEquity')"
+          onblur="onBlurInput(this,'${id}','collateralEquity')">
       </td>
       <td class="r">
         <span class="total-cell" id="am_${id}">${am>0?inr2(am):'—'}</span>
@@ -601,13 +599,34 @@ function renderTable(){
   updateSummary();
 }
 
-// ══ INPUT — only update local state, recalc row ══
-function onInput(id, field, val){
+// ══ INPUT HANDLERS — text inputs with Indian format ══
+// On focus: show raw number so user can type easily
+function onFocusInput(el, id, field){
+  var e = latestPerAccount[id]||{};
+  var raw = parseFloat(e[field])||0;
+  el.value = raw>0 ? raw.toFixed(2) : '';
+  el.select();
+}
+
+// On blur: parse value, update state, reformat display, auto-save
+function onBlurInput(el, id, field){
+  var raw = parseRaw(el.value);
   if(!latestPerAccount[id]) latestPerAccount[id]={};
-  latestPerAccount[id][field] = val===''?0:(parseFloat(val)||0);
+  latestPerAccount[id][field] = raw;
+  // Reformat display with Indian commas
+  el.value = raw>0 ? fmtInput(raw) : '';
   recalcRow(id);
   refreshTotalRow();
   updateSummary();
+  // Auto-save with debounce
+  clearTimeout(saveTimers[id]);
+  saveTimers[id] = setTimeout(()=>saveRow(id), 600);
+}
+
+// Parse string like "2,84,888.56" or "284888.56" → number
+function parseRaw(str){
+  if(!str) return 0;
+  return parseFloat(str.replace(/,/g,''))||0;
 }
 
 function onDateChange(id, val){
@@ -615,10 +634,16 @@ function onDateChange(id, val){
   latestPerAccount[id].date = val;
 }
 
-// ══ BLUR — auto-save with debounce ══
-function onBlurSave(id){
-  clearTimeout(saveTimers[id]);
-  saveTimers[id] = setTimeout(()=>saveRow(id), 600);
+// Format number as Indian ₹ format for input display (no ₹ symbol)
+function fmtInput(n){
+  if(!n||isNaN(n)) return '';
+  n = Math.abs(parseFloat(n));
+  var parts = n.toFixed(2).split('.');
+  var s=parts[0], dec=parts[1], r='';
+  if(s.length>3){r=','+s.slice(-3);s=s.slice(0,-3);
+    while(s.length>2){r=','+s.slice(-2)+r;s=s.slice(0,-2);}r=s+r;}
+  else r=s;
+  return r+'.'+dec;
 }
 
 async function saveRow(id){
