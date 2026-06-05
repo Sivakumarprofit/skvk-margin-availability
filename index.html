@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SKVK Margin Availability v1.1</title>
+<title>SKVK Margin Availability v1.2</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.34.0/dist/tabler-icons.min.css">
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
@@ -167,6 +167,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,sans-seri
   display:flex;align-items:center;gap:4px}
 .am-val{font-size:15px;font-weight:800;color:#64b5f6}
 
+.comp-rows{margin-top:8px;display:flex;flex-direction:column;gap:4px}
+.comp-row{display:flex;align-items:center;justify-content:space-between;
+  background:var(--bg3);border-radius:6px;padding:5px 10px;
+  border:1px solid var(--border)}
+.comp-lbl{font-size:10px;color:var(--text2);display:flex;align-items:center;gap:4px}
+.comp-pct{font-size:12px;font-weight:700}
+.cash-pct{color:var(--green)}
+.eq-pct{color:var(--amber)}
+
 .acc-footer{margin-top:8px;display:flex;flex-direction:column;gap:3px}
 .system-txt{font-size:10px;color:var(--text3);display:flex;align-items:center;gap:4px}
 .capital-row{display:flex;align-items:center;justify-content:space-between;
@@ -277,8 +286,8 @@ td.r{text-align:right;font-variant-numeric:tabular-nums}
   <div class="topbar">
     <div class="brand">
       <i class="ti ti-chart-candle" style="font-size:18px"></i>
-      SKVK <span class="accent">Margin</span>
-      <span class="vbadge">v1.1</span>
+      SKVK <span class="accent">Margin Availability</span>
+      <span class="vbadge">v1.2</span>
     </div>
     <div class="topbar-right">
       <span class="topbar-date" id="topDate"></span>
@@ -553,6 +562,9 @@ function renderGrid(){
     var pct  = plan > 0 ? Math.min(100, (am/plan)*100) : 0;
     var uCls = pct > 90 ? 'util-danger' : pct > 70 ? 'util-warn' : 'util-ok';
 
+    var cashComp = am > 0 ? (((parseFloat(cash)||0) + (parseFloat(cl)||0)) / am * 100) : 0;
+    var equComp  = am > 0 ? ((parseFloat(ce)||0) / am * 100) : 0;
+
     return `<div class="acc-card ${bClass(a.broker)}">
       <div class="acc-hdr">
         <div class="acc-hdr-left">
@@ -592,6 +604,17 @@ function renderGrid(){
           <span class="am-lbl"><i class="ti ti-wallet"></i> Available Margin</span>
           <span class="am-val" id="am_${id}">${am > 0 ? inr(am) : '—'}</span>
         </div>
+        <div class="comp-rows" id="comp_${id}">
+          ${am > 0 ? `
+          <div class="comp-row">
+            <span class="comp-lbl"><i class="ti ti-droplet" style="color:var(--green)"></i> Cash Component <span style="font-size:9px;color:var(--text3)">(Cash + Col.Liquid)</span></span>
+            <span class="comp-pct cash-pct">${cashComp.toFixed(1)}%</span>
+          </div>
+          <div class="comp-row">
+            <span class="comp-lbl"><i class="ti ti-chart-bar" style="color:var(--amber)"></i> Equity Component <span style="font-size:9px;color:var(--text3)">(Col.Equity)</span></span>
+            <span class="comp-pct eq-pct">${equComp.toFixed(1)}%</span>
+          </div>` : ''}
+        </div>
         <div class="acc-footer">
           ${a.system ? `<div class="system-txt"><i class="ti ti-cpu"></i>${esc(a.system)}</div>` : ''}
           ${plan ? `
@@ -618,12 +641,34 @@ function onInput(id, field, val, el){
   dayEntries[id][field] = val === '' ? '' : (parseFloat(val) || 0);
   el.classList.toggle('has-val', val !== '');
 
-  var e  = dayEntries[id];
-  var am = (parseFloat(e.cash)||0)
-         + (parseFloat(e.collateralEquity)||0)
-         + (parseFloat(e.collateralLiquid)||0);
+  var e    = dayEntries[id];
+  var cash = parseFloat(e.cash)             || 0;
+  var ce   = parseFloat(e.collateralEquity) || 0;
+  var cl   = parseFloat(e.collateralLiquid) || 0;
+  var am   = cash + ce + cl;
+
   var amEl = document.getElementById('am_'+id);
   if(amEl) amEl.textContent = am > 0 ? inr(am) : '—';
+
+  // Update percentage rows
+  var compEl = document.getElementById('comp_'+id);
+  if(compEl){
+    if(am > 0){
+      var cashComp = ((cash + cl) / am * 100).toFixed(1);
+      var equComp  = (ce / am * 100).toFixed(1);
+      compEl.innerHTML = `
+        <div class="comp-row">
+          <span class="comp-lbl"><i class="ti ti-droplet" style="color:var(--green)"></i> Cash Component <span style="font-size:9px;color:var(--text3)">(Cash + Col.Liquid)</span></span>
+          <span class="comp-pct cash-pct">${cashComp}%</span>
+        </div>
+        <div class="comp-row">
+          <span class="comp-lbl"><i class="ti ti-chart-bar" style="color:var(--amber)"></i> Equity Component <span style="font-size:9px;color:var(--text3)">(Col.Equity)</span></span>
+          <span class="comp-pct eq-pct">${equComp}%</span>
+        </div>`;
+    } else {
+      compEl.innerHTML = '';
+    }
+  }
 
   updateSummary();
   markUnsaved();
