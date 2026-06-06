@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SKVK Margin Availability v2.1</title>
+<title>SKVK Margin Availability v2.2</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.34.0/dist/tabler-icons.min.css">
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
@@ -257,7 +257,7 @@ td.c{text-align:center}
     <div class="brand">
       <i class="ti ti-chart-candle" style="font-size:18px"></i>
       SKVK <span class="accent">Margin Availability</span>
-      <span class="vbadge">v2.1</span>
+      <span class="vbadge">v2.2</span>
     </div>
     <div class="topbar-right">
       <span class="topbar-date" id="topDate"></span>
@@ -326,7 +326,7 @@ td.c{text-align:center}
             <th class="r">Col. Liquid</th>
             <th class="r">Col. Equity</th>
             <th class="r">Total Margin</th>
-            <th class="c">Min Cash</th>
+            <th class="c">MTM Cash</th>
             <th class="c">Cash Component %</th>
             <th class="c">Non-Cash %</th>
             <th>Date</th>
@@ -522,6 +522,8 @@ function renderTable(){
     var am   = cash+ce+cl;
     var cashComp = am>0?((cash+cl)/am*100):0;
     var eqComp   = am>0?(ce/am*100):0;
+    var mtmPct   = am>0?(cash/am*100):0;
+    var liqPct   = am>0?(cl/am*100):0;
     var isWarn   = am>0 && cashComp<50;
 
     var cashDisp = cash>0 ? fmtInput(cash) : '';
@@ -565,7 +567,7 @@ function renderTable(){
       <td class="c">
         <div class="pct-wrap" id="cashcomp_${id}">
           ${am>0
-            ? renderCashPct(cashComp)
+            ? renderCashPct(cashComp, mtmPct, liqPct)
             :'<span style="color:var(--text3)">—</span>'}
         </div>
       </td>
@@ -647,16 +649,22 @@ function renderCashLakh(id, cash){
   return `<span style="color:var(--green);font-weight:600">${lakhStr}</span>`;
 }
 
-function renderCashPct(cashComp){
+function renderCashPct(cashComp, mtmPct, liqPct){
   var isWarn = cashComp < 50;
-  var barColor = isWarn ? 'var(--red)' : 'var(--green)';
-  var pctColor = isWarn ? 'var(--red)' : 'var(--green)';
-  return `<div style="display:flex;flex-direction:column;align-items:center;gap:2px">
-    <div style="display:flex;align-items:center;gap:5px">
-      <div class="mini-bar"><div class="mini-fill-cash" style="width:${cashComp}%;background:${barColor}"></div></div>
-      <span class="cash-pct-val" style="color:${pctColor}">${cashComp.toFixed(2)}%</span>
+  // bar widths relative to cashComp so they fill the full bar
+  var mtmW  = cashComp>0 ? (mtmPct/cashComp*100)  : 0;
+  var liqW  = cashComp>0 ? (liqPct/cashComp*100)   : 0;
+  return `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;width:100%">
+    <span style="font-size:12px;font-weight:700;color:#0d7a3e">${cashComp.toFixed(2)}%</span>
+    <div style="width:100%;height:6px;border-radius:3px;overflow:hidden;display:flex;min-width:60px">
+      <div style="width:${mtmW}%;height:100%;background:#0d7a3e;transition:width .3s"></div>
+      <div style="width:${liqW}%;height:100%;background:#84cc16;transition:width .3s"></div>
     </div>
-    ${isWarn ? `<div style="font-size:9px;color:var(--red);font-weight:600;display:flex;align-items:center;gap:2px">
+    <div style="display:flex;justify-content:space-between;width:100%;margin-top:1px">
+      <span style="font-size:9px;color:#0d7a3e;font-weight:600">MTM ${mtmPct.toFixed(1)}%</span>
+      <span style="font-size:9px;color:#84cc16;font-weight:600">Liq ${liqPct.toFixed(1)}%</span>
+    </div>
+    ${isWarn ? `<div style="font-size:9px;color:var(--red);font-weight:600;display:flex;align-items:center;gap:2px;margin-top:1px">
       <i class="ti ti-alert-triangle" style="font-size:10px"></i> Below 50%
     </div>` : ''}
   </div>`;
@@ -716,6 +724,8 @@ function recalcRow(id){
   var am   = cash+ce+cl;
   var cashComp = am>0?((cash+cl)/am*100):0;
   var eqComp   = am>0?(ce/am*100):0;
+  var mtmPct   = am>0?(cash/am*100):0;
+  var liqPct   = am>0?(cl/am*100):0;
   var isWarn   = am>0 && cashComp<50;
 
   var amEl=document.getElementById('am_'+id);
@@ -725,7 +735,7 @@ function recalcRow(id){
   if(clEl) clEl.innerHTML=renderCashLakh(id, cash);
 
   var ccEl=document.getElementById('cashcomp_'+id);
-  if(ccEl) ccEl.innerHTML=am>0 ? renderCashPct(cashComp) : '<span style="color:var(--text3)">—</span>';
+  if(ccEl) ccEl.innerHTML=am>0 ? renderCashPct(cashComp, mtmPct, liqPct) : '<span style="color:var(--text3)">—</span>';
 
   var ecEl=document.getElementById('eqcomp_'+id);
   if(ecEl) ecEl.innerHTML=am>0
@@ -770,12 +780,20 @@ function refreshTotalRow(){
   tr.cells[6].innerHTML='';
 }
 
+function shortFmt(n){
+  if(!n||isNaN(n)) return '—';
+  n=Math.abs(parseFloat(n));
+  if(n>=10000000) return '₹'+(n/10000000).toFixed(2)+' Cr';
+  if(n>=100000)   return '₹'+(n/100000).toFixed(2)+' L';
+  return '₹'+n.toFixed(2);
+}
+
 function updateSummary(){
   var tots=calcTotals();
-  document.getElementById('sAM').textContent  = inr2(tots.am);
-  document.getElementById('sCol').textContent = inr2(tots.ce);
-  document.getElementById('sLiq').textContent = inr2(tots.cl);
-  document.getElementById('sCash').textContent= inr2(tots.cash);
+  document.getElementById('sAM').textContent  = shortFmt(tots.am);
+  document.getElementById('sCol').textContent = shortFmt(tots.ce);
+  document.getElementById('sLiq').textContent = shortFmt(tots.cl);
+  document.getElementById('sCash').textContent= shortFmt(tots.cash);
   var n=Object.keys(accounts).length;
   document.getElementById('sAMsub').textContent=n+' account'+(n!==1?'s':'')+' configured';
 }
