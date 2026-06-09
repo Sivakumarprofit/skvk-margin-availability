@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SKVK Margin Availability v2.2</title>
+<title>SKVK Margin Availability v2.3</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.34.0/dist/tabler-icons.min.css">
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
@@ -245,7 +245,19 @@ td.c{text-align:center}
 .empty h3{font-size:14px;font-weight:600;margin-bottom:5px;color:var(--text)}
 .empty p{font-size:12px;line-height:1.6}
 
-@media(max-width:900px){.sum-strip{grid-template-columns:1fr 1fr}}
+/* PIE CHARTS */
+.pie-card{background:var(--bg2);border-radius:var(--rlg);border:1px solid var(--border);
+  box-shadow:var(--shadow);padding:18px;display:flex;flex-direction:column;align-items:center;gap:14px}
+.pie-title{font-size:13px;font-weight:700;color:var(--text);align-self:flex-start}
+.pie-card canvas{max-width:260px;max-height:260px}
+.pie-legend{width:100%;display:flex;flex-direction:column;gap:5px}
+.pie-legend-item{display:flex;align-items:center;justify-content:space-between;font-size:11px;gap:8px}
+.pie-legend-left{display:flex;align-items:center;gap:6px}
+.pie-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.pie-legend-name{font-weight:600;color:var(--text)}
+.pie-legend-val{color:var(--text2);font-size:11px;white-space:nowrap}
+
+@media(max-width:900px){.sum-strip{grid-template-columns:1fr 1fr}#slicingGrid{grid-template-columns:1fr!important}}
 @media(max-width:480px){.sum-strip{grid-template-columns:1fr}.del-grid{grid-template-columns:1fr}}
 </style>
 </head>
@@ -257,7 +269,7 @@ td.c{text-align:center}
     <div class="brand">
       <i class="ti ti-chart-candle" style="font-size:18px"></i>
       SKVK <span class="accent">Margin Availability</span>
-      <span class="vbadge">v2.2</span>
+      <span class="vbadge">v2.3</span>
     </div>
     <div class="topbar-right">
       <span class="topbar-date" id="topDate"></span>
@@ -266,7 +278,8 @@ td.c{text-align:center}
 
   <!-- TABS -->
   <div class="tabs">
-    <div class="tab active" id="tab-entry"    onclick="goTab('entry')"><i class="ti ti-table"></i> Daily Entry</div>
+    <div class="tab active" id="tab-entry"    onclick="goTab('entry')"><i class="ti ti-layout-dashboard"></i> Funds Dashboard</div>
+    <div class="tab"        id="tab-slicing"  onclick="goTab('slicing')"><i class="ti ti-chart-pie"></i> Position Slicing</div>
     <div class="tab"        id="tab-history"  onclick="goTab('history')"><i class="ti ti-history"></i> History</div>
     <div class="tab"        id="tab-settings" onclick="goTab('settings')"><i class="ti ti-settings"></i> Settings</div>
   </div>
@@ -274,7 +287,7 @@ td.c{text-align:center}
   <!-- ══ ENTRY PANEL ══ -->
   <div id="panel-entry" class="content">
     <div class="entry-hdr">
-      <h2>Daily Margin Entry</h2>
+      <h2>Funds Dashboard</h2>
       <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text2)">
         <i class="ti ti-device-floppy" style="color:var(--green)"></i> Auto-saves on cell exit &nbsp;|&nbsp;
         <i class="ti ti-alert-triangle" style="color:var(--amber)"></i> Warning when Cash % &lt; 50%
@@ -338,6 +351,33 @@ td.c{text-align:center}
           </td></tr>
         </tbody>
       </table>
+    </div>
+  </div>
+
+  <!-- ══ POSITION SLICING PANEL ══ -->
+  <div id="panel-slicing" class="content" style="display:none">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px">
+      <h2>Position Slicing</h2>
+      <div style="font-size:11px;color:var(--text2);display:flex;align-items:center;gap:6px">
+        <i class="ti ti-info-circle"></i> Based on latest available margin per account
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px" id="slicingGrid">
+      <div class="pie-card" id="pie-accounts">
+        <div class="pie-title">By Account</div>
+        <canvas id="chart-accounts" width="300" height="300"></canvas>
+        <div class="pie-legend" id="legend-accounts"></div>
+      </div>
+      <div class="pie-card" id="pie-index">
+        <div class="pie-title">By Index Type</div>
+        <canvas id="chart-index" width="300" height="300"></canvas>
+        <div class="pie-legend" id="legend-index"></div>
+      </div>
+      <div class="pie-card" id="pie-trade">
+        <div class="pie-title">By Trade Style</div>
+        <canvas id="chart-trade" width="300" height="300"></canvas>
+        <div class="pie-legend" id="legend-trade"></div>
+      </div>
     </div>
   </div>
 
@@ -422,8 +462,12 @@ td.c{text-align:center}
         <input type="text" id="m_nick" placeholder="e.g. Kayal"></div>
       <div class="mf"><label>Capital Planned (₹)</label>
         <input type="number" id="m_capital" placeholder="e.g. 2500000"></div>
-      <div class="mf"><label>Min Cash Required (₹)</label>
+      <div class="mf"><label>Min MTM Cash Required (₹)</label>
         <input type="number" id="m_mincash" placeholder="e.g. 200000"></div>
+      <div class="mf"><label>Index Type</label>
+        <input type="text" id="m_index" placeholder="e.g. NIFTY, BANKNIFTY"></div>
+      <div class="mf"><label>Trade Style</label>
+        <input type="text" id="m_tradestyle" placeholder="e.g. BTST, INTRA, EXPIRY"></div>
       <div class="mf full"><label>System Configured</label>
         <input type="text" id="m_system" placeholder="e.g. Silver M — Ravi Platform — ZEBU"></div>
     </div>
@@ -484,12 +528,15 @@ var saveTimers       = {};
 
 // ══ TABS ══
 function goTab(t){
-  ['entry','history','settings'].forEach(p=>{
-    document.getElementById('panel-'+p).style.display = p===t?'block':'none';
-    document.getElementById('tab-'+p).classList.toggle('active',p===t);
+  ['entry','slicing','history','settings'].forEach(p=>{
+    var el=document.getElementById('panel-'+p);
+    if(el) el.style.display=p===t?'block':'none';
+    var tb=document.getElementById('tab-'+p);
+    if(tb) tb.classList.toggle('active',p===t);
   });
   if(t==='history') loadHistory();
   if(t==='settings') renderAccList();
+  if(t==='slicing') renderSlicing();
 }
 
 // ══ LOAD LATEST ══
@@ -891,7 +938,9 @@ function renderAccList(){
           <span><i class="ti ti-briefcase" style="font-size:10px"></i> ${esc(a.broker||'—')}</span>
           ${a.clientId?`<span><i class="ti ti-fingerprint" style="font-size:10px"></i> ${esc(a.clientId)}</span>`:''}
           ${a.capital ?`<span><i class="ti ti-currency-rupee" style="font-size:10px"></i> Planned: ${inr2(a.capital)}</span>`:''}
-          ${a.minCash ?`<span><i class="ti ti-cash" style="font-size:10px"></i> Min Cash: ${inr2(a.minCash)}</span>`:''}
+          ${a.minCash   ?`<span><i class="ti ti-cash" style="font-size:10px"></i> Min Cash: ${inr2(a.minCash)}</span>`:''}
+          ${a.indexType ?`<span><i class="ti ti-chart-line" style="font-size:10px"></i> ${esc(a.indexType)}</span>`:''}
+          ${a.tradeStyle?`<span><i class="ti ti-trending-up" style="font-size:10px"></i> ${esc(a.tradeStyle)}</span>`:''}
           ${a.system  ?`<span><i class="ti ti-cpu" style="font-size:10px"></i> ${esc(a.system.length>35?a.system.slice(0,35)+'…':a.system)}</span>`:''}
         </div>
       </div>
@@ -909,9 +958,11 @@ function openModal(id){
   document.getElementById('m_broker').value  =a.broker||'';
   document.getElementById('m_clientId').value=a.clientId||'';
   document.getElementById('m_nick').value    =a.nickname||'';
-  document.getElementById('m_capital').value =a.capital||'';
-  document.getElementById('m_mincash').value =a.minCash||'';
-  document.getElementById('m_system').value  =a.system||'';
+  document.getElementById('m_capital').value  =a.capital||'';
+  document.getElementById('m_mincash').value  =a.minCash||'';
+  document.getElementById('m_index').value    =a.indexType||'';
+  document.getElementById('m_tradestyle').value=a.tradeStyle||'';
+  document.getElementById('m_system').value   =a.system||'';
   document.getElementById('modalBg').classList.add('open');
 }
 function closeModal(){document.getElementById('modalBg').classList.remove('open');editId=null;}
@@ -919,11 +970,13 @@ async function saveAccount(){
   var broker=document.getElementById('m_broker').value.trim();
   var nick  =document.getElementById('m_nick').value.trim();
   var cid   =document.getElementById('m_clientId').value.trim();
-  var cap     =parseFloat(document.getElementById('m_capital').value)||0;
-  var minCash =parseFloat(document.getElementById('m_mincash').value)||0;
-  var sys     =document.getElementById('m_system').value.trim();
+  var cap       =parseFloat(document.getElementById('m_capital').value)||0;
+  var minCash   =parseFloat(document.getElementById('m_mincash').value)||0;
+  var indexType =document.getElementById('m_index').value.trim();
+  var tradeStyle=document.getElementById('m_tradestyle').value.trim();
+  var sys       =document.getElementById('m_system').value.trim();
   if(!broker||!nick){toast('Broker and Nickname are required',true);return;}
-  var obj={broker,clientId:cid,nickname:nick,capital:cap,minCash,system:sys,updAt:Date.now()};
+  var obj={broker,clientId:cid,nickname:nick,capital:cap,minCash,indexType,tradeStyle,system:sys,updAt:Date.now()};
   try{
     if(editId){await db.ref('margin/accounts/'+editId).update(obj);toast('Updated ✓');}
     else{await db.ref('margin/accounts').push(obj);toast('Account added ✓');}
@@ -981,6 +1034,126 @@ function toast(msg,isErr){
   el.textContent=msg;el.className='toast '+(isErr?'err':'ok');
   el.style.display='block';clearTimeout(el._t);
   el._t=setTimeout(()=>el.style.display='none',3200);
+}
+
+// ══ POSITION SLICING ══
+var chartInstances={};
+
+var PIE_COLORS=[
+  '#1565c0','#0d7a3e','#d97706','#6d28d9','#0d7377',
+  '#c0392b','#84cc16','#0891b2','#7c3aed','#b45309',
+  '#059669','#dc2626','#2563eb','#16a34a','#ca8a04'
+];
+
+function fmtL(n){ return (n/100000).toFixed(2)+'L'; }
+
+function renderSlicing(){
+  var list=Object.entries(accounts);
+  if(!list.length){
+    ['accounts','index','trade'].forEach(k=>{
+      var el=document.getElementById('pie-'+k);
+      if(el) el.innerHTML=`<div class="pie-title">${k==='accounts'?'By Account':k==='index'?'By Index Type':'By Trade Style'}</div>
+        <div class="empty" style="padding:30px 10px"><i class="ti ti-chart-pie"></i><h3>No accounts</h3><p>Add accounts in Settings</p></div>`;
+    });
+    return;
+  }
+
+  // Build data — get total margin per account from latestPerAccount
+  var accData=list.map(([id,a])=>{
+    var e=latestPerAccount[id]||{};
+    var am=(parseFloat(e.cash)||0)+(parseFloat(e.collateralEquity)||0)+(parseFloat(e.collateralLiquid)||0);
+    return{id,name:a.broker+' — '+(a.nickname||''),indexType:a.indexType||'Unassigned',tradeStyle:a.tradeStyle||'Unassigned',am};
+  }).filter(d=>d.am>0);
+
+  if(!accData.length){
+    ['accounts','index','trade'].forEach(k=>{
+      document.getElementById('legend-'+k).innerHTML='<div style="text-align:center;color:var(--text3);font-size:12px;padding:10px">No data yet — enter margin values first</div>';
+    });
+    return;
+  }
+
+  var total=accData.reduce((s,d)=>s+d.am,0);
+
+  // Chart 1 — By Account
+  drawPie('chart-accounts','legend-accounts',
+    accData.map(d=>({label:d.name, value:d.am})), total);
+
+  // Chart 2 — By Index Type
+  var byIndex={};
+  accData.forEach(d=>{ byIndex[d.indexType]=(byIndex[d.indexType]||0)+d.am; });
+  drawPie('chart-index','legend-index',
+    Object.entries(byIndex).map(([k,v])=>({label:k,value:v})), total);
+
+  // Chart 3 — By Trade Style
+  var byTrade={};
+  accData.forEach(d=>{ byTrade[d.tradeStyle]=(byTrade[d.tradeStyle]||0)+d.am; });
+  drawPie('chart-trade','legend-trade',
+    Object.entries(byTrade).map(([k,v])=>({label:k,value:v})), total);
+}
+
+function drawPie(canvasId, legendId, data, total){
+  var canvas=document.getElementById(canvasId);
+  if(!canvas) return;
+
+  // Destroy previous chart instance
+  if(chartInstances[canvasId]){
+    chartInstances[canvasId].destroy();
+    delete chartInstances[canvasId];
+  }
+
+  var colors=data.map((_,i)=>PIE_COLORS[i%PIE_COLORS.length]);
+  var labels=data.map(d=>`${d.label} (${(d.value/total*100).toFixed(1)}%)`);
+  var values=data.map(d=>d.value);
+
+  // Draw using Canvas2D (no external lib needed)
+  var ctx=canvas.getContext('2d');
+  var W=canvas.width, H=canvas.height;
+  var cx=W/2, cy=H/2, r=Math.min(W,H)/2-10;
+  ctx.clearRect(0,0,W,H);
+
+  var start=(-Math.PI/2);
+  data.forEach((d,i)=>{
+    var slice=d.value/total*(2*Math.PI);
+    ctx.beginPath();
+    ctx.moveTo(cx,cy);
+    ctx.arc(cx,cy,r,start,start+slice);
+    ctx.closePath();
+    ctx.fillStyle=colors[i];
+    ctx.fill();
+    ctx.strokeStyle='#fff';
+    ctx.lineWidth=2;
+    ctx.stroke();
+    start+=slice;
+  });
+
+  // Centre hole (donut style)
+  ctx.beginPath();
+  ctx.arc(cx,cy,r*0.45,0,2*Math.PI);
+  ctx.fillStyle=getComputedStyle(document.documentElement).getPropertyValue('--bg2').trim()||'#fff';
+  ctx.fill();
+
+  // Centre text
+  ctx.fillStyle=getComputedStyle(document.documentElement).getPropertyValue('--text').trim()||'#1a1d23';
+  ctx.font='bold 13px sans-serif';
+  ctx.textAlign='center';
+  ctx.textBaseline='middle';
+  ctx.fillText(fmtL(total),cx,cy);
+
+  // Legend
+  var legendEl=document.getElementById(legendId);
+  legendEl.innerHTML=data.map((d,i)=>{
+    var pct=(d.value/total*100).toFixed(1);
+    return `<div class="pie-legend-item">
+      <div class="pie-legend-left">
+        <div class="pie-dot" style="background:${colors[i]}"></div>
+        <span class="pie-legend-name">${esc(d.label)}</span>
+      </div>
+      <span class="pie-legend-val">${pct}% · ${fmtL(d.value)}</span>
+    </div>`;
+  }).join('');
+
+  // Store reference (simple object for cleanup)
+  chartInstances[canvasId]={destroy:()=>ctx.clearRect(0,0,W,H)};
 }
 </script>
 </body>
