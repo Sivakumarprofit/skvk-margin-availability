@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SKVK Margin Availability v2.4</title>
+<title>SKVK Margin Availability v2.5</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.34.0/dist/tabler-icons.min.css">
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
@@ -269,7 +269,7 @@ td.c{text-align:center}
     <div class="brand">
       <i class="ti ti-chart-candle" style="font-size:18px"></i>
       SKVK <span class="accent">Margin Availability</span>
-      <span class="vbadge">v2.4</span>
+      <span class="vbadge">v2.5</span>
     </div>
     <div class="topbar-right">
       <span class="topbar-date" id="topDate"></span>
@@ -455,15 +455,20 @@ td.c{text-align:center}
           <option value="bank">Bank Account</option>
         </select></div>
       <div class="mf"><label>Broker / Bank Name *</label>
-        <select id="m_broker">
+        <select id="m_broker" onchange="onBrokerChange(this)">
           <option value="">Select…</option>
           <option>Zebu</option><option>Shoonya</option><option>Jainam</option>
           <option>IIFL</option><option>Zerodha</option><option>AliceBlue</option>
           <option>Upstox</option>
           <option>SBI</option><option>HDFC</option><option>ICICI</option>
           <option>Axis</option><option>Kotak</option>
-          <option>Other</option>
-        </select></div>
+          <option value="__other__">Other (type below)</option>
+        </select>
+        <input type="text" id="m_broker_other" placeholder="Type broker / bank name"
+          style="display:none;margin-top:6px;height:36px;padding:0 10px;border-radius:var(--r);
+                 border:1px solid var(--border2);background:var(--bg);color:var(--text);
+                 font-size:13px;font-family:inherit;width:100%">
+      </div>
       <div class="mf"><label>Client / Account ID</label>
         <input type="text" id="m_clientId" placeholder="e.g. Z67916"></div>
       <div class="mf"><label>Nickname *</label>
@@ -744,6 +749,9 @@ function parseRaw(str){
 function onDateChange(id, val){
   if(!latestPerAccount[id]) latestPerAccount[id]={};
   latestPerAccount[id].date = val;
+  // Trigger save on date change too
+  clearTimeout(saveTimers[id]);
+  saveTimers[id] = setTimeout(()=>saveRow(id), 600);
 }
 
 // Format number as Indian ₹ format for input display (no ₹ symbol)
@@ -989,6 +997,17 @@ function renderAccList(){
     </div>`).join('');
 }
 
+function onBrokerChange(sel){
+  var otherInput = document.getElementById('m_broker_other');
+  if(sel.value==='__other__'){
+    otherInput.style.display='block';
+    otherInput.focus();
+  } else {
+    otherInput.style.display='none';
+    otherInput.value='';
+  }
+}
+
 function toggleAccType(){
   var t=document.getElementById('m_acctype').value;
   document.querySelectorAll('.broker-only').forEach(el=>{
@@ -1000,7 +1019,19 @@ function openModal(id){
   document.getElementById('modalTitle').textContent=id?'Edit Account':'Add Account';
   var a=id&&accounts[id]?accounts[id]:{};
   document.getElementById('m_acctype').value   =a.accType||'broker';
-  document.getElementById('m_broker').value    =a.broker||'';
+  // Handle broker field — if value not in dropdown, show as custom
+  var brokerSel = document.getElementById('m_broker');
+  var brokerOther = document.getElementById('m_broker_other');
+  var knownBrokers = ['Zebu','Shoonya','Jainam','IIFL','Zerodha','AliceBlue','Upstox','SBI','HDFC','ICICI','Axis','Kotak',''];
+  if(a.broker && !knownBrokers.includes(a.broker)){
+    brokerSel.value='__other__';
+    brokerOther.style.display='block';
+    brokerOther.value=a.broker;
+  } else {
+    brokerSel.value=a.broker||'';
+    brokerOther.style.display='none';
+    brokerOther.value='';
+  }
   document.getElementById('m_clientId').value  =a.clientId||'';
   document.getElementById('m_nick').value      =a.nickname||'';
   document.getElementById('m_capital').value   =a.capital||'';
@@ -1014,7 +1045,10 @@ function openModal(id){
 function closeModal(){document.getElementById('modalBg').classList.remove('open');editId=null;}
 async function saveAccount(){
   var accType   =document.getElementById('m_acctype').value;
-  var broker    =document.getElementById('m_broker').value.trim();
+  var brokerSel = document.getElementById('m_broker').value.trim();
+  var broker    = brokerSel==='__other__'
+    ? document.getElementById('m_broker_other').value.trim()
+    : brokerSel;
   var nick      =document.getElementById('m_nick').value.trim();
   var cid       =document.getElementById('m_clientId').value.trim();
   var cap       =parseFloat(document.getElementById('m_capital').value)||0;
