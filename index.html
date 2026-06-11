@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SKVK Margin Availability v2.8</title>
+<title>SKVK Margin Availability v2.9</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.34.0/dist/tabler-icons.min.css">
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
@@ -307,7 +307,7 @@ td.c{text-align:center}
     <div class="brand">
       <i class="ti ti-chart-candle" style="font-size:18px"></i>
       SKVK <span class="accent">Margin Availability</span>
-      <span class="vbadge">v2.8</span>
+      <span class="vbadge">v2.9</span>
     </div>
     <div class="topbar-right">
       <span class="topbar-date" id="topDate"></span>
@@ -668,7 +668,6 @@ function renderTable(){
               ${esc(a.broker||'')} — ${esc(a.nickname||'')}${accBadge}
             </div>
             <div class="acc-sub">${esc(a.clientId||'')}${!isBank&&a.system?' · '+esc(a.system.slice(0,18)):''}</div>
-            ${deployPct!==''?`<div style="margin-top:3px"><span class="deploy-badge" style="${depBadgeStyle}">${deployPct}% deployed</span></div>`:''}
           </div>
         </div>
       </td>
@@ -741,10 +740,6 @@ function renderTable(){
               id="f_deploy_${id}" value="${deployPct!==''?deployPct:''}" placeholder="0–100"
               onblur="onExpandSave('${id}')">
           </div>
-          ${deployPct!==''?`<div class="expand-field" style="justify-content:flex-end">
-            <label>&nbsp;</label>
-            <span class="deploy-badge" style="${depBadgeStyle}">${deployPct}% Capital Deployed</span>
-          </div>`:''}
         </div>
       </td>
     </tr>`;
@@ -1109,18 +1104,6 @@ async function onExpandSave(id){
   var accCell = document.getElementById('acccell_'+id);
   if(accCell){
     accCell.className = deployPct===0?'dep-none':deployPct===100?'dep-full':deployPct>=51?'dep-mid':'dep-low';
-  }
-  // Update badge in account cell
-  var depBadgeStyle = deployPct===100
-    ? 'background:#dcfce7;color:#14532d'
-    : deployPct>=51
-    ? 'background:#ffedd5;color:#c2410c'
-    : deployPct>0
-    ? 'background:#fef3c7;color:#92400e'
-    : '';
-  var badgeEl = accCell?.querySelector('.deploy-badge');
-  if(deployPct>0){
-    if(badgeEl){ badgeEl.textContent=deployPct+'% deployed'; badgeEl.style.cssText=depBadgeStyle; }
   }
 
   // Save to Firebase accounts_latest
