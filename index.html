@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SKVK Margin Availability v2.6</title>
+<title>SKVK Margin Availability v2.7</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.34.0/dist/tabler-icons.min.css">
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
@@ -293,7 +293,7 @@ td.c{text-align:center}
     <div class="brand">
       <i class="ti ti-chart-candle" style="font-size:18px"></i>
       SKVK <span class="accent">Margin Availability</span>
-      <span class="vbadge">v2.6</span>
+      <span class="vbadge">v2.7</span>
     </div>
     <div class="topbar-right">
       <span class="topbar-date" id="topDate"></span>
@@ -1111,6 +1111,8 @@ async function onExpandSave(id){
     await db.ref('margin/accounts_latest/'+id).update({strategy, deployPct, savedAt: Date.now()});
   }catch(err){ toast('Save error: '+err.message, true); }
 }
+
+function onBrokerChange(sel){
   var otherInput = document.getElementById('m_broker_other');
   if(sel.value==='__other__'){
     otherInput.style.display='block';
