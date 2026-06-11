@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SKVK Margin Availability v2.7</title>
+<title>SKVK Margin Availability v2.8</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.34.0/dist/tabler-icons.min.css">
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
@@ -103,13 +103,14 @@ table{width:100%;border-collapse:collapse;min-width:960px;table-layout:fixed}
 
 /* Column widths */
 col.c-acc  {width:170px}
-col.c-cash {width:140px}
-col.c-cl   {width:130px}
-col.c-ce   {width:130px}
-col.c-am   {width:145px}
+col.c-date {width:85px}
+col.c-cash {width:130px}
+col.c-cl   {width:120px}
+col.c-ce   {width:120px}
+col.c-am   {width:135px}
 col.c-cpct {width:145px}
-col.c-epct {width:130px}
-col.c-date {width:115px}
+col.c-epct {width:120px}
+col.c-act  {width:44px}
 
 thead th{background:var(--navy);padding:10px 12px;
   font-size:10px;font-weight:700;color:#fff;white-space:nowrap;
@@ -125,6 +126,19 @@ tbody tr:hover:not(.total-row):not(.warn-row) td{background:var(--bg3)}
 /* Warning row — no background, warnings shown inside cells only */
 tbody tr.warn-row{border-left:none}
 tbody tr.warn-row td{background:inherit !important}
+
+/* Deployment colour — preserve on hover */
+td.dep-low  {background:#fef3c7 !important;color:#92400e}
+td.dep-mid  {background:#ffedd5 !important;color:#c2410c}
+td.dep-full {background:#dcfce7 !important;color:#14532d}
+td.dep-none {background:transparent}
+
+/* + Action button */
+.add-btn{width:28px;height:28px;border-radius:50%;border:1.5px solid var(--border2);
+  background:var(--bg2);color:var(--text2);cursor:pointer;
+  display:inline-flex;align-items:center;justify-content:center;
+  font-size:16px;font-weight:300;transition:all .15s;line-height:1}
+.add-btn:hover{background:var(--navy);color:#fff;border-color:var(--navy)}
 
 /* Total row — exact same padding/alignment as body rows */
 tbody tr.total-row{background:var(--navy2) !important;border-top:2px solid var(--navy)}
@@ -155,10 +169,10 @@ td.c{text-align:center}
 .cell-input.cash-input{font-weight:normal}
 
 /* Row date input */
-.row-date-input{width:105px;height:28px;padding:0 4px;
+.row-date-input{width:82px;height:28px;padding:0 2px;
   border-radius:6px;border:1px solid transparent;
   background:transparent;color:var(--text2);
-  font-size:11px;font-family:inherit;cursor:pointer;transition:all .15s}
+  font-size:10px;font-family:inherit;cursor:pointer;transition:all .15s}
 .row-date-input:hover{border-color:var(--border2);background:var(--bg2)}
 .row-date-input:focus{outline:none;border-color:var(--blue);background:var(--bg2);color:var(--text)}
 
@@ -293,7 +307,7 @@ td.c{text-align:center}
     <div class="brand">
       <i class="ti ti-chart-candle" style="font-size:18px"></i>
       SKVK <span class="accent">Margin Availability</span>
-      <span class="vbadge">v2.7</span>
+      <span class="vbadge">v2.8</span>
     </div>
     <div class="topbar-right">
       <span class="topbar-date" id="topDate"></span>
@@ -347,6 +361,7 @@ td.c{text-align:center}
       <table>
         <colgroup>
           <col class="c-acc">
+          <col class="c-date">
           <col class="c-cash">
           <col class="c-cl">
           <col class="c-ce">
@@ -354,11 +369,12 @@ td.c{text-align:center}
           <col style="width:110px">
           <col class="c-cpct">
           <col class="c-epct">
-          <col class="c-date">
+          <col class="c-act">
         </colgroup>
         <thead>
           <tr>
             <th>Account</th>
+            <th>Date</th>
             <th class="r">Cash Balance</th>
             <th class="r">Col. Liquid</th>
             <th class="r">Col. Equity</th>
@@ -366,11 +382,11 @@ td.c{text-align:center}
             <th class="c">MTM Cash</th>
             <th class="c">Cash Component %</th>
             <th class="c">Non-Cash %</th>
-            <th>Date</th>
+            <th class="c"></th>
           </tr>
         </thead>
         <tbody id="entryBody">
-          <tr><td colspan="8" style="text-align:center;padding:40px;color:var(--text2)">
+          <tr><td colspan="10" style="text-align:center;padding:40px;color:var(--text2)">
             <i class="ti ti-refresh spin"></i> Loading…
           </td></tr>
         </tbody>
@@ -646,9 +662,6 @@ function renderTable(){
     return `<tr id="row_${id}">
       <td class="${depClass}" id="acccell_${id}">
         <div style="display:flex;align-items:flex-start;gap:6px">
-          <button class="expand-btn" id="expbtn_${id}" onclick="toggleExpand('${id}')" title="Strategy & Deployment">
-            <i class="ti ti-chevron-right" id="expicon_${id}"></i>
-          </button>
           <div>
             <div class="acc-name">
               ${anyWarn?'<i class="ti ti-alert-triangle warn-icon"></i>':''}
@@ -658,6 +671,11 @@ function renderTable(){
             ${deployPct!==''?`<div style="margin-top:3px"><span class="deploy-badge" style="${depBadgeStyle}">${deployPct}% deployed</span></div>`:''}
           </div>
         </div>
+      </td>
+      <td>
+        <input type="date" class="row-date-input" id="f_date_${id}" value="${date}"
+          title="Enter trading date manually"
+          onchange="onDateChange('${id}',this.value)">
       </td>
       <td class="r">
         <input type="text" inputmode="decimal" class="cell-input"
@@ -702,14 +720,14 @@ function renderTable(){
                <span class="eq-pct-val">${eqComp.toFixed(2)}%</span></div>`
             :'<span style="color:var(--text3)">—</span>'}
       </td>
-      <td>
-        <input type="date" class="row-date-input" id="f_date_${id}" value="${date}"
-          title="Enter trading date manually"
-          onchange="onDateChange('${id}',this.value)">
+      <td class="c">
+        <button class="add-btn" onclick="toggleExpand('${id}')" id="expbtn_${id}" title="Strategy & Deployment">
+          <i class="ti ti-plus" id="expicon_${id}"></i>
+        </button>
       </td>
     </tr>
     <tr class="expand-row" id="exprow_${id}">
-      <td colspan="9">
+      <td colspan="10">
         <div class="expand-inner">
           <div class="expand-field">
             <label>Strategy Deployed</label>
@@ -736,6 +754,7 @@ function renderTable(){
   var tots = calcTotals();
   rows += `<tr class="total-row">
     <td><strong>TOTAL</strong></td>
+    <td></td>
     <td class="r">${inr2(tots.cash)}</td>
     <td class="r">${inr2(tots.cl)}</td>
     <td class="r">${inr2(tots.ce)}</td>
@@ -926,16 +945,14 @@ function calcTotals(){
 
 function refreshTotalRow(){
   var tots=calcTotals();
-  var tcPct=tots.am>0?((tots.cash+tots.cl)/tots.am*100).toFixed(2):'—';
-  var tePct=tots.am>0?(tots.ce/tots.am*100).toFixed(2):'—';
   var tr=document.querySelector('#entryBody tr.total-row');
   if(!tr) return;
-  tr.cells[1].textContent=inr2(tots.cash);
-  tr.cells[2].textContent=inr2(tots.cl);
-  tr.cells[3].textContent=inr2(tots.ce);
-  tr.cells[4].innerHTML=`<span style="color:#64b5f6;font-size:13px">${inr2(tots.am)}</span>`;
-  tr.cells[5].innerHTML='';
+  tr.cells[2].textContent=inr2(tots.cash);
+  tr.cells[3].textContent=inr2(tots.cl);
+  tr.cells[4].textContent=inr2(tots.ce);
+  tr.cells[5].innerHTML=`<span style="color:#64b5f6;font-size:13px">${inr2(tots.am)}</span>`;
   tr.cells[6].innerHTML='';
+  tr.cells[7].innerHTML='';
 }
 
 function shortFmt(n){
@@ -1074,7 +1091,7 @@ function toggleExpand(id){
   var row  = document.getElementById('exprow_'+id);
   var icon = document.getElementById('expicon_'+id);
   var open = row.classList.toggle('open');
-  icon.className = open ? 'ti ti-chevron-down' : 'ti ti-chevron-right';
+  icon.className = open ? 'ti ti-x' : 'ti ti-plus';
   if(open) document.getElementById('f_strategy_'+id)?.focus();
 }
 
