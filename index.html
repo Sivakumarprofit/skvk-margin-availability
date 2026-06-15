@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>SKVK Margin Availability v3.0</title>
+<title>SKVK Margin Availability v3.1</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.34.0/dist/tabler-icons.min.css">
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
@@ -131,11 +131,11 @@ tbody tr:hover:not(.total-row):not(.warn-row) td{background:var(--bg3)}
 tbody tr.warn-row{border-left:none}
 tbody tr.warn-row td{background:inherit !important}
 
-/* Deployment colour — preserve on hover */
-td.dep-low  {background:#fef3c7 !important;color:#92400e}
-td.dep-mid  {background:#ffedd5 !important;color:#c2410c}
-td.dep-full {background:#dcfce7 !important;color:#14532d}
-td.dep-none {background:transparent}
+/* Deployment colour on first 5 cells */
+tr.dep-low  td:nth-child(-n+5){background:#fef3c7 !important}
+tr.dep-mid  td:nth-child(-n+5){background:#ffedd5 !important}
+tr.dep-full td:nth-child(-n+5){background:#dcfce7 !important}
+tr.dep-none td:nth-child(-n+5){background:transparent}
 
 /* + Action button */
 .add-btn{width:28px;height:28px;border-radius:50%;border:1.5px solid var(--border2);
@@ -225,11 +225,11 @@ td.c{text-align:center}
 .expand-txt{width:180px}
 .deploy-badge{font-size:11px;font-weight:700;padding:2px 10px;border-radius:20px;white-space:nowrap}
 
-/* Account cell deployment colours */
-.dep-none {background:transparent}
-.dep-low  {background:#fef3c7;color:#92400e}  /* 1-50% amber tint */
-.dep-mid  {background:#ffedd5;color:#c2410c}  /* 51-99% orange tint */
-.dep-full {background:#dcfce7;color:#14532d}  /* 100% green tint */
+/* Account cell deployment colours — applied at TR level */
+tr.dep-none{}
+tr.dep-low  td:nth-child(-n+5){background:#fef3c7}
+tr.dep-mid  td:nth-child(-n+5){background:#ffedd5}
+tr.dep-full td:nth-child(-n+5){background:#dcfce7}
 .detail-table tr:last-child td{border-bottom:none}
 .detail-table tr.warn-row td{background:var(--warn-bg)}
 
@@ -311,7 +311,7 @@ td.c{text-align:center}
     <div class="brand">
       <i class="ti ti-chart-candle" style="font-size:18px"></i>
       SKVK <span class="accent">Margin Availability</span>
-      <span class="vbadge">v3.0</span>
+      <span class="vbadge">v3.1</span>
     </div>
     <div class="topbar-right">
       <span class="topbar-date" id="topDate"></span>
@@ -431,25 +431,51 @@ td.c{text-align:center}
   <div id="panel-history" class="content" style="display:none">
     <div class="hist-hdr">
       <h2>Entry History</h2>
-      <button class="btn" onclick="loadHistory()"><i class="ti ti-refresh"></i> Refresh</button>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <div class="mf" style="flex-direction:row;align-items:center;gap:8px;margin:0">
+          <label style="font-size:11px;font-weight:600;color:var(--text2);white-space:nowrap">Select Account</label>
+          <select id="histAccSelect" onchange="loadHistory()"
+            style="height:32px;padding:0 10px;border-radius:var(--r);border:1px solid var(--border2);
+                   background:var(--bg2);color:var(--text);font-size:12px;font-family:inherit;min-width:200px">
+            <option value="">— Choose account —</option>
+          </select>
+        </div>
+        <button class="btn" onclick="loadHistory()"><i class="ti ti-refresh"></i> Refresh</button>
+      </div>
     </div>
-    <div class="hist-wrap">
+
+    <!-- Day-wise table -->
+    <div class="hist-wrap" id="histTableWrap" style="display:none">
       <table>
         <thead>
           <tr>
-            <th style="width:36px"></th>
-            <th>Saved At</th>
-            <th>Accounts</th>
-            <th class="r">Cash + Liquid</th>
+            <th>Date</th>
+            <th class="r">Cash Balance</th>
+            <th class="r">Col. Liquid</th>
             <th class="r">Col. Equity</th>
             <th class="r">Total Margin</th>
             <th class="r">Change</th>
           </tr>
         </thead>
         <tbody id="histBody">
-          <tr><td colspan="7" style="text-align:center;padding:30px;color:var(--text2)">Loading…</td></tr>
+          <tr><td colspan="6" style="text-align:center;padding:30px;color:var(--text2)">Select an account above</td></tr>
         </tbody>
       </table>
+    </div>
+
+    <!-- Line graph -->
+    <div id="histChartWrap" style="display:none;margin-top:20px;background:var(--bg2);
+      border:1px solid var(--border);border-radius:var(--rlg);padding:20px;box-shadow:var(--shadow)">
+      <div style="font-size:13px;font-weight:700;margin-bottom:14px;color:var(--text)">
+        Total Margin Over Time
+      </div>
+      <canvas id="histChart" style="width:100%;max-height:300px"></canvas>
+    </div>
+
+    <div id="histEmpty" style="text-align:center;padding:50px 20px;color:var(--text2)">
+      <i class="ti ti-chart-line" style="font-size:44px;color:var(--text3);display:block;margin-bottom:10px"></i>
+      <h3 style="font-size:14px;font-weight:600;margin-bottom:5px;color:var(--text)">Select an account</h3>
+      <p style="font-size:12px">Choose an account from the dropdown to view its history</p>
     </div>
   </div>
 
@@ -523,10 +549,16 @@ td.c{text-align:center}
         <input type="number" id="m_capital" placeholder="e.g. 2500000"></div>
       <div class="mf broker-only"><label>Min MTM Cash Required (₹)</label>
         <input type="number" id="m_mincash" placeholder="e.g. 200000"></div>
-      <div class="mf broker-only"><label>Index Type</label>
-        <input type="text" id="m_index" placeholder="e.g. NIFTY, BANKNIFTY"></div>
-      <div class="mf broker-only"><label>Trade Style</label>
-        <input type="text" id="m_tradestyle" placeholder="e.g. BTST, INTRA, EXPIRY"></div>
+      <div class="mf full broker-only">
+        <label>Index × Trade Style Combinations
+          <span style="font-size:10px;color:var(--text3);margin-left:6px">Total must = 100%</span>
+        </label>
+        <div id="m_combinations" style="display:flex;flex-direction:column;gap:6px;margin-top:4px"></div>
+        <button type="button" class="btn sm" onclick="addCombination()" style="margin-top:6px;align-self:flex-start">
+          <i class="ti ti-plus"></i> Add Combination
+        </button>
+        <div id="m_combo_total" style="font-size:11px;margin-top:4px;font-weight:600"></div>
+      </div>
       <div class="mf full broker-only"><label>System Configured</label>
         <input type="text" id="m_system" placeholder="e.g. Silver M — Ravi Platform — ZEBU"></div>
     </div>
@@ -580,6 +612,7 @@ var saveTimers       = {};
   db.ref('margin/accounts').on('value', snap=>{
     accounts = snap.val()||{};
     renderAccList();
+    populateHistAccSelect();
     if(Object.keys(latestPerAccount).length===0) loadLatest();
     else renderTable();
   });
@@ -676,8 +709,8 @@ function renderTable(){
       ? 'background:#fef3c7;color:#92400e'
       : 'background:var(--bg3);color:var(--text2)';
 
-    return `<tr id="row_${id}">
-      <td class="${depClass}" id="acccell_${id}">
+    return `<tr id="row_${id}" class="${depClass}">
+      <td id="acccell_${id}">
         <div>
           <div class="acc-name">
             ${anyWarn?'<i class="ti ti-alert-triangle warn-icon"></i>':''}
@@ -974,86 +1007,158 @@ function updateSummary(){
   document.getElementById('sAMsub').textContent=n+' account'+(n!==1?'s':'')+' configured';
 }
 
-// ══ HISTORY — reads from margin/daily/YYYYMMDD ══
-async function loadHistory(){
-  var tb=document.getElementById('histBody');
-  tb.innerHTML='<tr><td colspan="7" style="text-align:center;padding:26px;color:var(--text2)"><i class="ti ti-refresh spin"></i> Loading…</td></tr>';
-  try{
-    var snap=await db.ref('margin/daily').orderByKey().limitToLast(60).once('value');
-    var raw=snap.val()||{};
-    // Each key is YYYYMMDD, contains account entries + _totals
-    histData=Object.entries(raw).map(([dateKey,dayData])=>{
-      var totals=dayData._totals||{};
-      var entries={};
-      Object.entries(dayData).forEach(([k,v])=>{ if(k!=='_totals') entries[k]=v; });
-      var dateStr=dateKey.slice(0,4)+'-'+dateKey.slice(4,6)+'-'+dateKey.slice(6,8);
-      return{dateKey,dateStr,entries,totals,savedAt:totals.savedAt||0};
-    }).sort((a,b)=>b.dateKey.localeCompare(a.dateKey));
+// ══ HISTORY — account-based with line chart ══
+var histChart = null;
 
-    if(!histData.length){
-      tb.innerHTML='<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--text2)">No history yet.</td></tr>';
+function populateHistAccSelect(){
+  var sel = document.getElementById('histAccSelect');
+  if(!sel) return;
+  var current = sel.value;
+  sel.innerHTML = '<option value="">— Choose account —</option>';
+  Object.entries(accounts).forEach(([id,a])=>{
+    var opt = document.createElement('option');
+    opt.value = id;
+    opt.textContent = (a.broker||'') + ' — ' + (a.nickname||'');
+    sel.appendChild(opt);
+  });
+  if(current) sel.value = current;
+}
+
+async function loadHistory(){
+  var accId = document.getElementById('histAccSelect')?.value;
+  var tb    = document.getElementById('histBody');
+  var tableWrap = document.getElementById('histTableWrap');
+  var chartWrap = document.getElementById('histChartWrap');
+  var emptyEl   = document.getElementById('histEmpty');
+
+  if(!accId){
+    tableWrap.style.display='none';
+    chartWrap.style.display='none';
+    emptyEl.style.display='block';
+    return;
+  }
+
+  emptyEl.style.display='none';
+  tb.innerHTML='<tr><td colspan="6" style="text-align:center;padding:26px;color:var(--text2)"><i class="ti ti-refresh spin"></i> Loading…</td></tr>';
+  tableWrap.style.display='block';
+
+  try{
+    var snap = await db.ref('margin/daily').orderByKey().limitToLast(60).once('value');
+    var raw  = snap.val()||{};
+    // Build per-date entries for this account
+    var rows = [];
+    Object.entries(raw).sort((a,b)=>a[0].localeCompare(b[0])).forEach(([dateKey,dayData])=>{
+      if(dayData[accId]){
+        var e = dayData[accId];
+        var dateStr = dateKey.slice(0,4)+'-'+dateKey.slice(4,6)+'-'+dateKey.slice(6,8);
+        var cash = parseFloat(e.cash)||0;
+        var ce   = parseFloat(e.collateralEquity)||0;
+        var cl   = parseFloat(e.collateralLiquid)||0;
+        var am   = cash+ce+cl;
+        rows.push({dateKey, dateStr, cash, ce, cl, am});
+      }
+    });
+
+    if(!rows.length){
+      tb.innerHTML='<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--text2)">No history for this account yet.</td></tr>';
+      chartWrap.style.display='none';
       return;
     }
-    tb.innerHTML=histData.map((r,i)=>{
-      var prev=histData[i+1];
-      var delta=prev&&r.totals.available&&prev.totals.available
-        ?r.totals.available-prev.totals.available:null;
-      var dTxt=delta!==null
-        ?`<span class="delta ${delta>=0?'pos':'neg'}">${delta>=0?'+':''}${inr2(delta)}</span>`:'—';
-      var dateDisp=new Date(r.dateStr+'T00:00:00').toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
-      var cashLiq=(r.totals.cash||0)+(r.totals.collateralLiquid||0);
-      var accCount=Object.keys(r.entries).length;
+
+    // Render table — newest first
+    var rowsDesc = [...rows].reverse();
+    tb.innerHTML = rowsDesc.map((r,i)=>{
+      var prev  = rowsDesc[i+1];
+      var delta = prev ? r.am - prev.am : null;
+      var dTxt  = delta!==null
+        ? `<span class="delta ${delta>=0?'pos':'neg'}">${delta>=0?'+':''}${inr2(delta)}</span>`
+        : '—';
+      var dateDisp = new Date(r.dateStr+'T00:00:00').toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
       return `<tr>
-        <td><button class="btn sm" onclick="showDetail(${i})"><i class="ti ti-eye"></i></button></td>
         <td><strong>${dateDisp}</strong></td>
-        <td>${accCount}</td>
-        <td class="r">${inr2(cashLiq)}</td>
-        <td class="r">${inr2(r.totals.collateral||0)}</td>
-        <td class="r" style="font-weight:700;color:var(--blue)">${inr2(r.totals.available||0)}</td>
+        <td class="r">${inr2(r.cash)}</td>
+        <td class="r">${inr2(r.cl)}</td>
+        <td class="r">${inr2(r.ce)}</td>
+        <td class="r" style="font-weight:700;color:var(--blue)">${inr2(r.am)}</td>
         <td class="r">${dTxt}</td>
       </tr>`;
     }).join('');
+
+    // Draw line chart
+    chartWrap.style.display='block';
+    drawHistChart(rows);
+
   }catch(e){
-    tb.innerHTML=`<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--red)">Error: ${e.message}</td></tr>`;
+    tb.innerHTML=`<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--red)">Error: ${e.message}</td></tr>`;
   }
 }
 
-async function showDetail(idx){
-  var r=histData[idx]; if(!r) return;
-  var dateDisp=new Date(r.dateStr+'T00:00:00').toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
-  document.getElementById('detailModalTitle').textContent='Entry — '+dateDisp;
-  var entries=r.entries||{};
-  var rows=Object.entries(entries).map(([id,e])=>{
-    var a=accounts[id]||{};
-    var isBank=a.accType==='bank';
-    var cash=parseFloat(e.cash)||0,ce=parseFloat(e.collateralEquity)||0,cl=parseFloat(e.collateralLiquid)||0;
-    var am=cash+ce+cl;
-    var cashPct=am>0?((cash+cl)/am*100).toFixed(2):'—';
-    var eqPct  =am>0?(ce/am*100).toFixed(2):'—';
-    var isWarn =!isBank&&am>0&&parseFloat(cashPct)<50;
-    return `<tr>
-      <td>${isWarn?'⚠️ ':''} ${esc(a.broker||'')} — ${esc(a.nickname||id)}
-        ${isBank?'<span style="font-size:9px;background:#0d7a3e;color:#fff;padding:1px 5px;border-radius:3px;margin-left:4px">BANK</span>':''}
-      </td>
-      <td class="r">${inr2(cash)}</td>
-      <td class="r">${isBank?'N/A':inr2(cl)}</td>
-      <td class="r">${isBank?'N/A':inr2(ce)}</td>
-      <td class="r" style="font-weight:700;color:var(--blue)">${inr2(am)}</td>
-      <td class="r" style="color:${isWarn?'var(--red)':'var(--green)'}">${isBank?'N/A':cashPct+'%'}</td>
-      <td class="r" style="color:var(--amber)">${isBank?'N/A':eqPct+'%'}</td>
-      <td style="font-size:10px;color:var(--text3)">${e.date||r.dateStr||'—'}</td>
-    </tr>`;
-  }).join('');
-  document.getElementById('detailModalBody').innerHTML=`
-    <table class="detail-table">
-      <thead><tr>
-        <th>Account</th><th class="r">Cash</th><th class="r">Col.Liquid</th>
-        <th class="r">Col.Equity</th><th class="r">Total</th>
-        <th class="r">Cash%</th><th class="r">NonCash%</th><th>Date</th>
-      </tr></thead>
-      <tbody>${rows||'<tr><td colspan="8" style="text-align:center;padding:20px">No data</td></tr>'}</tbody>
-    </table>`;
-  document.getElementById('detailModalBg').classList.add('open');
+function drawHistChart(rows){
+  var canvas = document.getElementById('histChart');
+  if(!canvas) return;
+  var ctx = canvas.getContext('2d');
+  canvas.width  = canvas.parentElement.clientWidth - 40;
+  canvas.height = 280;
+  var W = canvas.width, H = canvas.height;
+  var padL=60, padR=20, padT=20, padB=50;
+  ctx.clearRect(0,0,W,H);
+
+  var labels = rows.map(r=>new Date(r.dateStr+'T00:00:00').toLocaleDateString('en-IN',{day:'2-digit',month:'short'}));
+  var values = rows.map(r=>r.am);
+  var minV = Math.min(...values)*0.98;
+  var maxV = Math.max(...values)*1.02;
+  var n    = values.length;
+
+  // Grid lines
+  ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--border').trim()||'#e2e5ea';
+  ctx.lineWidth = 1;
+  for(var g=0;g<=4;g++){
+    var y = padT + (H-padT-padB)*g/4;
+    ctx.beginPath(); ctx.moveTo(padL,y); ctx.lineTo(W-padR,y); ctx.stroke();
+    var val = maxV - (maxV-minV)*g/4;
+    ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--text2').trim()||'#5a6070';
+    ctx.font = '10px sans-serif'; ctx.textAlign='right';
+    ctx.fillText(shortFmt(val), padL-4, y+4);
+  }
+
+  // X labels
+  ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--text2').trim()||'#5a6070';
+  ctx.font='10px sans-serif'; ctx.textAlign='center';
+  labels.forEach((lbl,i)=>{
+    var x = padL + (W-padL-padR)*i/(n-1||1);
+    ctx.fillText(lbl, x, H-padB+16);
+  });
+
+  // Line
+  ctx.beginPath();
+  ctx.strokeStyle='#1565c0'; ctx.lineWidth=2.5;
+  values.forEach((v,i)=>{
+    var x = padL + (W-padL-padR)*i/(n-1||1);
+    var y = padT + (H-padT-padB)*(1-(v-minV)/(maxV-minV||1));
+    i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+  });
+  ctx.stroke();
+
+  // Fill under line
+  ctx.beginPath();
+  values.forEach((v,i)=>{
+    var x = padL + (W-padL-padR)*i/(n-1||1);
+    var y = padT + (H-padT-padB)*(1-(v-minV)/(maxV-minV||1));
+    i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+  });
+  ctx.lineTo(padL+(W-padL-padR)*(n-1)/(n-1||1), H-padB);
+  ctx.lineTo(padL, H-padB);
+  ctx.closePath();
+  ctx.fillStyle='rgba(21,101,192,0.08)'; ctx.fill();
+
+  // Dots
+  values.forEach((v,i)=>{
+    var x = padL + (W-padL-padR)*i/(n-1||1);
+    var y = padT + (H-padT-padB)*(1-(v-minV)/(maxV-minV||1));
+    ctx.beginPath(); ctx.arc(x,y,4,0,2*Math.PI);
+    ctx.fillStyle='#1565c0'; ctx.fill();
+    ctx.strokeStyle='#fff'; ctx.lineWidth=1.5; ctx.stroke();
+  });
 }
 
 // ══ SETTINGS ══
@@ -1075,9 +1180,8 @@ function renderAccList(){
           <span><i class="ti ti-briefcase" style="font-size:10px"></i> ${esc(a.broker||'—')}</span>
           ${a.clientId?`<span><i class="ti ti-fingerprint" style="font-size:10px"></i> ${esc(a.clientId)}</span>`:''}
           ${a.capital ?`<span><i class="ti ti-currency-rupee" style="font-size:10px"></i> Planned: ${inr2(a.capital)}</span>`:''}
-          ${a.minCash   ?`<span><i class="ti ti-cash" style="font-size:10px"></i> Min Cash: ${inr2(a.minCash)}</span>`:''}
-          ${a.indexType ?`<span><i class="ti ti-chart-line" style="font-size:10px"></i> ${esc(a.indexType)}</span>`:''}
-          ${a.tradeStyle?`<span><i class="ti ti-trending-up" style="font-size:10px"></i> ${esc(a.tradeStyle)}</span>`:''}
+          ${a.minCash ?`<span><i class="ti ti-cash" style="font-size:10px"></i> Min Cash: ${inr2(a.minCash)}</span>`:''}
+          ${a.combinations&&a.combinations.length?`<span><i class="ti ti-chart-pie" style="font-size:10px"></i> ${a.combinations.map(c=>c.index+'/'+c.trade+' '+c.pct+'%').join(' · ')}</span>`:''}
           ${a.system  ?`<span><i class="ti ti-cpu" style="font-size:10px"></i> ${esc(a.system.length>35?a.system.slice(0,35)+'…':a.system)}</span>`:''}
         </div>
       </div>
@@ -1107,9 +1211,11 @@ async function onExpandSave(id){
   latestPerAccount[id].deployPct = deployPct;
 
   // Update account cell colour and lock icon live
+  var row = document.getElementById('row_'+id);
+  if(row){
+    row.className = deployPct===0?'dep-none':deployPct===100?'dep-full':deployPct>=51?'dep-mid':'dep-low';
+  }
   var accCell = document.getElementById('acccell_'+id);
-  if(accCell){
-    accCell.className = deployPct===0?'dep-none':deployPct===100?'dep-full':deployPct>=51?'dep-mid':'dep-low';
     var a = accounts[id]||{};
     var nameEl = accCell.querySelector('.acc-name');
     if(nameEl){
@@ -1155,50 +1261,101 @@ function toggleAccType(){
     el.style.display=t==='broker'?'flex':'none';
   });
 }
+// ── Combination management ──
+function addCombination(index='', trade='', pct=''){
+  var container = document.getElementById('m_combinations');
+  var row = document.createElement('div');
+  row.style.cssText='display:flex;align-items:center;gap:6px;flex-wrap:wrap';
+  row.innerHTML=`
+    <input type="text" placeholder="Index (e.g. NIFTY)" value="${esc(index)}"
+      style="height:32px;padding:0 8px;border-radius:var(--r);border:1px solid var(--border2);
+             background:var(--bg);color:var(--text);font-size:12px;font-family:inherit;width:130px"
+      oninput="updateComboTotal()" class="combo-index">
+    <input type="text" placeholder="Style (e.g. BTST)" value="${esc(trade)}"
+      style="height:32px;padding:0 8px;border-radius:var(--r);border:1px solid var(--border2);
+             background:var(--bg);color:var(--text);font-size:12px;font-family:inherit;width:120px"
+      oninput="updateComboTotal()" class="combo-trade">
+    <input type="number" placeholder="%" min="0" max="100" value="${pct}"
+      style="height:32px;padding:0 8px;border-radius:var(--r);border:1px solid var(--border2);
+             background:var(--bg);color:var(--text);font-size:12px;font-family:inherit;width:70px"
+      oninput="updateComboTotal()" class="combo-pct">
+    <button type="button" onclick="this.parentElement.remove();updateComboTotal()"
+      style="height:32px;width:32px;border-radius:var(--r);border:1px solid var(--red);
+             background:none;color:var(--red);cursor:pointer;font-size:14px;display:flex;
+             align-items:center;justify-content:center">
+      <i class="ti ti-x"></i>
+    </button>`;
+  container.appendChild(row);
+  updateComboTotal();
+}
+
+function updateComboTotal(){
+  var pcts = Array.from(document.querySelectorAll('.combo-pct')).map(i=>parseFloat(i.value)||0);
+  var total = pcts.reduce((s,v)=>s+v,0);
+  var el = document.getElementById('m_combo_total');
+  if(!el) return;
+  el.textContent = 'Total: '+total+'%';
+  el.style.color = total===100 ? 'var(--green)' : total>100 ? 'var(--red)' : 'var(--amber)';
+}
+
+function getCombinations(){
+  var rows = document.getElementById('m_combinations').children;
+  var combos = [];
+  Array.from(rows).forEach(row=>{
+    var idx   = row.querySelector('.combo-index')?.value.trim()||'';
+    var trade = row.querySelector('.combo-trade')?.value.trim()||'';
+    var pct   = parseFloat(row.querySelector('.combo-pct')?.value)||0;
+    if(idx||trade) combos.push({index:idx, trade, pct});
+  });
+  return combos;
+}
+
 function openModal(id){
   editId=id||null;
   document.getElementById('modalTitle').textContent=id?'Edit Account':'Add Account';
   var a=id&&accounts[id]?accounts[id]:{};
   document.getElementById('m_acctype').value   =a.accType||'broker';
-  // Handle broker field — if value not in dropdown, show as custom
-  var brokerSel = document.getElementById('m_broker');
+  var brokerSel   = document.getElementById('m_broker');
   var brokerOther = document.getElementById('m_broker_other');
-  var knownBrokers = ['Zebu','Shoonya','Jainam','IIFL','Zerodha','AliceBlue','Upstox','SBI','HDFC','ICICI','Axis','Kotak',''];
+  var knownBrokers=['Zebu','Shoonya','Jainam','IIFL','Zerodha','AliceBlue','Upstox','SBI','HDFC','ICICI','Axis','Kotak',''];
   if(a.broker && !knownBrokers.includes(a.broker)){
-    brokerSel.value='__other__';
-    brokerOther.style.display='block';
-    brokerOther.value=a.broker;
+    brokerSel.value='__other__'; brokerOther.style.display='block'; brokerOther.value=a.broker;
   } else {
-    brokerSel.value=a.broker||'';
-    brokerOther.style.display='none';
-    brokerOther.value='';
+    brokerSel.value=a.broker||''; brokerOther.style.display='none'; brokerOther.value='';
   }
-  document.getElementById('m_clientId').value  =a.clientId||'';
-  document.getElementById('m_nick').value      =a.nickname||'';
-  document.getElementById('m_capital').value   =a.capital||'';
-  document.getElementById('m_mincash').value   =a.minCash||'';
-  document.getElementById('m_index').value     =a.indexType||'';
-  document.getElementById('m_tradestyle').value=a.tradeStyle||'';
-  document.getElementById('m_system').value    =a.system||'';
+  document.getElementById('m_clientId').value=a.clientId||'';
+  document.getElementById('m_nick').value    =a.nickname||'';
+  document.getElementById('m_capital').value =a.capital||'';
+  document.getElementById('m_mincash').value =a.minCash||'';
+  document.getElementById('m_system').value  =a.system||'';
+  // Load combinations
+  var container = document.getElementById('m_combinations');
+  container.innerHTML='';
+  if(a.combinations&&a.combinations.length){
+    a.combinations.forEach(c=>addCombination(c.index,c.trade,c.pct));
+  } else if(a.indexType||a.tradeStyle){
+    // Migrate old single index/trade to combination
+    addCombination(a.indexType||'', a.tradeStyle||'', 100);
+  } else {
+    addCombination();
+  }
   toggleAccType();
   document.getElementById('modalBg').classList.add('open');
 }
 function closeModal(){document.getElementById('modalBg').classList.remove('open');editId=null;}
+
 async function saveAccount(){
   var accType   =document.getElementById('m_acctype').value;
-  var brokerSel = document.getElementById('m_broker').value.trim();
-  var broker    = brokerSel==='__other__'
-    ? document.getElementById('m_broker_other').value.trim()
-    : brokerSel;
+  var brokerSel =document.getElementById('m_broker').value.trim();
+  var broker    =brokerSel==='__other__'?document.getElementById('m_broker_other').value.trim():brokerSel;
   var nick      =document.getElementById('m_nick').value.trim();
   var cid       =document.getElementById('m_clientId').value.trim();
   var cap       =parseFloat(document.getElementById('m_capital').value)||0;
   var minCash   =accType==='broker'?(parseFloat(document.getElementById('m_mincash').value)||0):0;
-  var indexType =accType==='broker'?document.getElementById('m_index').value.trim():'';
-  var tradeStyle=accType==='broker'?document.getElementById('m_tradestyle').value.trim():'';
   var sys       =accType==='broker'?document.getElementById('m_system').value.trim():'';
+  var combinations=accType==='broker'?getCombinations():[];
   if(!broker||!nick){toast('Name and Nickname are required',true);return;}
-  var obj={accType,broker,clientId:cid,nickname:nick,capital:cap,minCash,indexType,tradeStyle,system:sys,updAt:Date.now()};
+  var obj={accType,broker,clientId:cid,nickname:nick,capital:cap,minCash,combinations,system:sys,updAt:Date.now()};
   try{
     if(editId){await db.ref('margin/accounts/'+editId).update(obj);toast('Updated ✓');}
     else{await db.ref('margin/accounts').push(obj);toast('Account added ✓');}
@@ -1284,7 +1441,7 @@ function renderSlicing(){
   var accData=list.map(([id,a])=>{
     var e=latestPerAccount[id]||{};
     var am=(parseFloat(e.cash)||0)+(parseFloat(e.collateralEquity)||0)+(parseFloat(e.collateralLiquid)||0);
-    return{id,name:a.broker+' — '+(a.nickname||''),indexType:a.indexType||'Unassigned',tradeStyle:a.tradeStyle||'Unassigned',am};
+    return{id,name:a.broker+' — '+(a.nickname||''),combinations:a.combinations||[],am};
   }).filter(d=>d.am>0);
 
   if(!accData.length){
@@ -1300,15 +1457,33 @@ function renderSlicing(){
   drawPie('chart-accounts','legend-accounts',
     accData.map(d=>({label:d.name, value:d.am})), total);
 
-  // Chart 2 — By Index Type
+  // Chart 2 — By Index Type (using combinations)
   var byIndex={};
-  accData.forEach(d=>{ byIndex[d.indexType]=(byIndex[d.indexType]||0)+d.am; });
+  accData.forEach(d=>{
+    if(d.combinations.length){
+      d.combinations.forEach(c=>{
+        var key=c.index||'Unassigned';
+        byIndex[key]=(byIndex[key]||0)+d.am*(c.pct/100);
+      });
+    } else {
+      byIndex['Unassigned']=(byIndex['Unassigned']||0)+d.am;
+    }
+  });
   drawPie('chart-index','legend-index',
     Object.entries(byIndex).map(([k,v])=>({label:k,value:v})), total);
 
-  // Chart 3 — By Trade Style
+  // Chart 3 — By Trade Style (using combinations)
   var byTrade={};
-  accData.forEach(d=>{ byTrade[d.tradeStyle]=(byTrade[d.tradeStyle]||0)+d.am; });
+  accData.forEach(d=>{
+    if(d.combinations.length){
+      d.combinations.forEach(c=>{
+        var key=c.trade||'Unassigned';
+        byTrade[key]=(byTrade[key]||0)+d.am*(c.pct/100);
+      });
+    } else {
+      byTrade['Unassigned']=(byTrade['Unassigned']||0)+d.am;
+    }
+  });
   drawPie('chart-trade','legend-trade',
     Object.entries(byTrade).map(([k,v])=>({label:k,value:v})), total);
 }
