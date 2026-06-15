@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>SKVK Margin Availability v3.1</title>
+<title>SKVK Margin Availability v3.2</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.34.0/dist/tabler-icons.min.css">
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
@@ -311,7 +311,7 @@ tr.dep-full td:nth-child(-n+5){background:#dcfce7}
     <div class="brand">
       <i class="ti ti-chart-candle" style="font-size:18px"></i>
       SKVK <span class="accent">Margin Availability</span>
-      <span class="vbadge">v3.1</span>
+      <span class="vbadge">v3.2</span>
     </div>
     <div class="topbar-right">
       <span class="topbar-date" id="topDate"></span>
@@ -1216,6 +1216,7 @@ async function onExpandSave(id){
     row.className = deployPct===0?'dep-none':deployPct===100?'dep-full':deployPct>=51?'dep-mid':'dep-low';
   }
   var accCell = document.getElementById('acccell_'+id);
+  if(accCell){
     var a = accounts[id]||{};
     var nameEl = accCell.querySelector('.acc-name');
     if(nameEl){
