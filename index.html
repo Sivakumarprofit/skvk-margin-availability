@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>SKVK Margin Availability v3.4</title>
+<title>SKVK Margin Availability v3.5</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.34.0/dist/tabler-icons.min.css">
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
@@ -47,10 +47,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,sans-seri
   position:absolute;left:50%;transform:translateX(-50%)}
 .brand .accent{color:#64b5f6}
 .vbadge{background:rgba(100,181,246,.18);color:#64b5f6;
-  font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;
+  font-size:13px;font-weight:700;padding:3px 10px;border-radius:20px;
   border:1px solid rgba(100,181,246,.3)}
 .topbar-right{display:flex;align-items:center;gap:10px}
-.topbar-date{font-size:11px;color:rgba(255,255,255,.55)}
+.topbar-date{font-size:13px;font-weight:600;color:rgba(255,255,255,.85);
+  background:rgba(255,255,255,.1);padding:4px 12px;border-radius:20px;
+  border:1px solid rgba(255,255,255,.2);white-space:nowrap}
 
 /* TABS */
 .tabs{background:var(--navy2);display:flex;padding:0 20px;
@@ -318,7 +320,7 @@ tr.dep-full td:nth-child(-n+5){background:#dcfce7}
     <div class="brand">
       <i class="ti ti-chart-candle" style="font-size:26px"></i>
       SKVK <span class="accent">Margin Availability</span>
-      <span class="vbadge">v3.4</span>
+      <span class="vbadge">v3.5</span>
     </div>
     <div class="topbar-right">
       <span class="topbar-date" id="topDate"></span>
@@ -361,7 +363,7 @@ tr.dep-full td:nth-child(-n+5){background:#dcfce7}
         <div class="sub">Liquid / LiquidBees</div>
       </div>
       <div class="scard green">
-        <div class="lbl"><i class="ti ti-currency-rupee" style="font-size:13px;margin-right:4px"></i>Total Cash Balance</div>
+        <div class="lbl"><i class="ti ti-currency-rupee" style="font-size:13px;margin-right:4px"></i>Total Cash Balance (MTM)</div>
         <div class="val" id="sCash">₹ —</div>
         <div class="sub">Real cash in account</div>
       </div>
@@ -695,12 +697,11 @@ function loadLatest(){
       }
     });
     // Update topbar date
-    if(latestDate){
-      document.getElementById('topDate').textContent =
-        'Last Updated: '+new Date(latestDate+'T00:00:00').toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'2-digit'});
-    } else if(latestSavedAt){
-      document.getElementById('topDate').textContent =
-        'Last Updated: '+new Date(latestSavedAt).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'2-digit'});
+    if(latestSavedAt){
+      var d = new Date(latestSavedAt);
+      var dateStr = d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'2-digit'});
+      var timeStr = d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true});
+      document.getElementById('topDate').textContent = 'Last Updated: '+dateStr+', '+timeStr;
     } else {
       document.getElementById('topDate').textContent = 'No data yet';
     }
@@ -822,7 +823,7 @@ function renderTable(){
               onblur="onBlurInput(this,'${id}','collateralEquity')">`}
       </td>
       <td class="r">
-        <span class="total-cell" id="am_${id}">${am>0?`${inr2(am)} <span style="font-size:13px;font-weight:700;color:var(--blue)">(${fmtLakh(am)})</span>`:'—'}</span>
+        <span class="total-cell" id="am_${id}">${am>0?`<div style="display:flex;flex-direction:column;align-items:flex-end;gap:1px"><span style="font-size:14px;font-weight:800;color:var(--blue)">${fmtLakh(am)}</span><span style="font-size:11px;font-weight:400;color:var(--text2)">${inr2(am)}</span></div>`:'—'}</span>
       </td>
       <td class="c" id="cashlakh_${id}">
         ${isBank
@@ -831,7 +832,7 @@ function renderTable(){
       </td>
       <td class="c" id="cashcomp_${id}">
         ${isBank
-          ? '<span style="color:var(--text3);font-size:11px">N/A</span>'
+          ? renderCashPct(100, 100, 0)
           : am>0 ? renderCashPct(cashComp,mtmPct,liqPct) : '<span style="color:var(--text3)">—</span>'}
       </td>
       <td class="c" id="eqcomp_${id}">
@@ -925,7 +926,7 @@ function renderCashLakh(id, cash){
       <div style="font-size:9px;color:var(--red);margin-top:1px">Min: ${fmtLakh(minCash)}</div>
     </div>`;
   }
-  return `<span style="color:var(--green);font-weight:700;font-size:14px">${lakhStr}${pctOfTotal?` <span style="font-size:12px;font-weight:700;color:var(--green)">(${pctOfTotal})</span>`:''}</span>`;
+  return `<span style="color:#84cc16;font-weight:700;font-size:14px">${lakhStr}${pctOfTotal?` <span style="font-size:12px;font-weight:700;color:#84cc16">(${pctOfTotal})</span>`:''}</span>`;
 }
 
 function renderCashPct(cashComp, mtmPct, liqPct){
@@ -940,11 +941,11 @@ function renderCashPct(cashComp, mtmPct, liqPct){
       <div style="width:${liqW}%;height:100%;background:#0d7a3e;transition:width .3s"></div>
     </div>
     <div style="display:flex;justify-content:space-between;width:100%;margin-top:1px">
-      <span style="font-size:9px;color:#84cc16;font-weight:600">MTM ${mtmPct.toFixed(1)}%</span>
-      <span style="font-size:9px;color:#0d7a3e;font-weight:600">Liq ${liqPct.toFixed(1)}%</span>
+      <span style="font-size:9px;color:#84cc16;font-weight:600">Liq ${liqPct.toFixed(1)}%</span>
+      <span style="font-size:9px;color:#0d7a3e;font-weight:600">MTM ${mtmPct.toFixed(1)}%</span>
     </div>
-    ${isWarn ? `<div style="font-size:9px;color:var(--red);font-weight:600;display:flex;align-items:center;gap:2px;margin-top:1px">
-      <i class="ti ti-alert-triangle" style="font-size:10px"></i> Below 50%
+    ${isWarn ? `<div style="font-size:11px;color:var(--red);font-weight:700;display:flex;align-items:center;gap:3px;margin-top:2px">
+      <i class="ti ti-alert-triangle" style="font-size:13px"></i> Below 50%
     </div>` : ''}
   </div>`;
 }
@@ -1047,13 +1048,16 @@ function recalcRow(id){
   var isWarn   = am>0 && cashComp<50;
 
   var amEl=document.getElementById('am_'+id);
-  if(amEl) amEl.innerHTML=am>0?`${inr2(am)} <span style="font-size:13px;font-weight:700;color:var(--blue)">(${fmtLakh(am)})</span>`:'—';
+  if(amEl) amEl.innerHTML=am>0?`<div style="display:flex;flex-direction:column;align-items:flex-end;gap:1px"><span style="font-size:14px;font-weight:800;color:var(--blue)">${fmtLakh(am)}</span><span style="font-size:11px;font-weight:400;color:var(--text2)">${inr2(am)}</span></div>`:'—';
 
   var clEl=document.getElementById('cashlakh_'+id);
   if(clEl) clEl.innerHTML=renderCashLakh(id, cash);
 
   var ccEl=document.getElementById('cashcomp_'+id);
-  if(ccEl) ccEl.innerHTML=am>0 ? renderCashPct(cashComp, mtmPct, liqPct) : '<span style="color:var(--text3)">—</span>';
+  var isBank = (accounts[id]||{}).accType==='bank';
+  if(ccEl) ccEl.innerHTML = isBank
+    ? renderCashPct(100,100,0)
+    : am>0 ? renderCashPct(cashComp, mtmPct, liqPct) : '<span style="color:var(--text3)">—</span>';
 
   var ecEl=document.getElementById('eqcomp_'+id);
   if(ecEl) ecEl.innerHTML=am>0
