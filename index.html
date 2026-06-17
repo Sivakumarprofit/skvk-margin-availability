@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>SKVK Margin Availability v4.1</title>
+<title>SKVK Margin Availability v4.2</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.34.0/dist/tabler-icons.min.css">
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
@@ -292,7 +292,7 @@ tr.dep-full td:nth-child(-n+5){background:#dcfce7}
     <div class="brand">
       <i class="ti ti-chart-candle" style="font-size:26px"></i>
       SKVK <span class="accent">Margin Availability</span>
-      <span class="vbadge">v4.1</span>
+      <span class="vbadge">v4.2</span>
     </div>
     <div class="topbar-right">
       <span class="topbar-date" id="topDate"></span>
@@ -668,6 +668,17 @@ var PIE_COLORS       = [
   '#059669','#dc2626','#2563eb','#16a34a','#ca8a04'
 ];
 
+// ══ CRITICAL REPAIRED FIREBASE CONFIGURATION OBJECT ══
+var FIREBASE_CONFIG = {
+  apiKey:            "AIzaSyBLNXE6A-EJo1WS5cFJZM3B2YxqcJMJI00",
+  authDomain:        "skvk-margin-calculator.firebaseapp.com",
+  databaseURL:       "https://skvk-margin-calculator-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId:         "skvk-margin-calculator",
+  storageBucket:     "skvk-margin-calculator.firebasestorage.app",
+  messagingSenderId: "341103062702",
+  appId:             "1:341103062702:web:fadf6ca98e4b1eb2f2473f"
+};
+
 // ══ WORKSPACE APPLICATION CORE CONTROLLERS ══
 function goTab(t) {
   ['entry','slicing','history','settings'].forEach(p=>{
@@ -953,6 +964,14 @@ function collapseDate(id){
   if(inp.value) disp.textContent = fmtDateShort(inp.value);
 }
 
+function onDateChange(id, val){
+  if(!latestPerAccount[id]) latestPerAccount[id]={};
+  latestPerAccount[id].date = val;
+  if(focusCache['date_'+id] === val) return;
+  clearTimeout(saveTimers[id]);
+  saveTimers[id] = setTimeout(()=>saveRow(id), 600);
+}
+
 async function saveRow(id){
   var e    = latestPerAccount[id]||{};
   var date = document.getElementById('f_date_'+id)?.value||'';
@@ -1029,7 +1048,38 @@ function recalcRow(id){
   }
 }
 
-// ══ HISTORICAL LEDGER SNAPSHOTS ══
+function calcTotals(){
+  var cash=0,ce=0,cl=0;
+  Object.keys(accounts).forEach(id=>{
+    var e=latestPerAccount[id]||{};
+    cash+=parseFloat(e.cash)||0;
+    ce  +=parseFloat(e.collateralEquity)||0;
+    cl  +=parseFloat(e.collateralLiquid)||0;
+  });
+  return{cash,ce,cl,am:cash+ce+cl};
+}
+
+function refreshTotalRow(){
+  var tots=calcTotals();
+  var tr=document.querySelector('#entryBody tr.total-row');
+  if(!tr) return;
+  tr.cells[2].textContent=inr2(tots.cash);
+  tr.cells[3].textContent=inr2(tots.cl);
+  tr.cells[4].textContent=inr2(tots.ce);
+  tr.cells[5].innerHTML=`<span style="color:#64b5f6;font-size:13px">${inr2(tots.am)}</span>`;
+}
+
+function updateSummary(){
+  var tots=calcTotals();
+  document.getElementById('sAM').textContent  = shortFmt(tots.am);
+  document.getElementById('sCol').textContent = shortFmt(tots.ce);
+  document.getElementById('sLiq').textContent = shortFmt(tots.cl);
+  document.getElementById('sCash').textContent= shortFmt(tots.cash);
+  var n=Object.keys(accounts).length;
+  document.getElementById('sAMsub').textContent=n+' account'+(n!==1?'s':'')+' configured';
+}
+
+// ══ HISTORICAL LEDGER SYSTEMS ══
 function populateHistAccSelect(){
   var sel = document.getElementById('histAccSelect');
   if(!sel) return;
@@ -1225,7 +1275,7 @@ function drawLineChart(canvasId, rows, color){
   });
 }
 
-// ══ APPLICATION LAYOUT MODALS & UTILITIES ══
+// ══ ACCOUNT PROPERTIES SYSTEM ══
 function renderAccList(){
   var el=document.getElementById('accList');
   var list=Object.entries(accounts);
@@ -1314,7 +1364,7 @@ function toggleAccType(){
   });
 }
 
-function addCombination(sysName='', index='', trade='', pct++){
+function addCombination(sysName='', index='', trade='', pct=''){
   var container = document.getElementById('m_combinations');
   var row = document.createElement('div');
   row.style.cssText='display:flex;flex-direction:column;gap:4px;padding:8px;background:var(--bg3);border-radius:var(--r);border:1px solid var(--border)';
@@ -1402,6 +1452,7 @@ function openModal(id){
   toggleAccType();
   document.getElementById('modalBg').classList.add('open');
 }
+
 function closeModal(){document.getElementById('modalBg').classList.remove('open');editId=null;}
 
 async function saveAccount(){
@@ -1422,11 +1473,13 @@ async function saveAccount(){
     closeModal();
   }catch(e){toast('Error: '+e.message,true);}
 }
+
 async function delAccount(id){
   if(!confirm('Delete this account?')) return;
   try{await db.ref('margin/accounts/'+id).remove();toast('Deleted');}
   catch(e){toast('Error: '+e.message,true);}
 }
+
 async function deleteOldData(){
   var before=document.getElementById('delBefore').value;
   if(!before){toast('Select a date first',true);return;}
@@ -1443,6 +1496,7 @@ async function deleteOldData(){
     toast(toDelete.length+' day(s) deleted ✓');
   }catch(e){toast('Error: '+e.message,true);}
 }
+
 async function deleteAllData(){
   if(!confirm('⚠️ Delete ALL history? Cannot be undone.')) return;
   if(!confirm('Absolutely sure? All daily history will be permanently deleted.')) return;
@@ -1450,7 +1504,7 @@ async function deleteAllData(){
   catch(e){toast('Error: '+e.message,true);}
 }
 
-// ══ POSITION PIE CHARTS ══
+// ══ POSITION ALLOCATION SLICING SYSTEMS ══
 function renderSlicing(){
   var list=Object.entries(accounts);
   if(!list.length){
@@ -1566,7 +1620,7 @@ function drawPie(canvasId, legendId, data, total){
   chartInstances[canvasId]={destroy:()=>ctx.clearRect(0,0,W,H)};
 }
 
-// ══ ASYNCHRONOUS INITIALIZATION ENGINE (DELAYED TO DOM LOADING REPAIR) ══
+// ══ ASYNCHRONOUS INITIALIZATION ENGINE ══
 window.addEventListener('DOMContentLoaded', function layoutBootEngine() {
   try { firebase.initializeApp(FIREBASE_CONFIG); } catch(e) {}
   db = firebase.database();
