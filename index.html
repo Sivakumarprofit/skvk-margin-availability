@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>SKVK Margin Availability v4.4</title>
+<title>SKVK Margin Availability v4.5</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.34.0/dist/tabler-icons.min.css">
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
@@ -138,7 +138,6 @@ tbody tr:hover:not(.total-row):not(.warn-row) td{background:var(--bg3)}
 tbody tr.warn-row{border-left:none}
 tbody tr.warn-row td{background:inherit !important}
 
-/* System Allocation highlight colours applied to first 5 cells */
 tr.sys-random td:nth-child(-n+5) {background:#ffedd5 !important}
 tr.sys-trial  td:nth-child(-n+5) {background:#fed7aa !important}
 tr.sys-locked td:nth-child(-n+5) {background:#dcfce7 !important}
@@ -290,17 +289,19 @@ select.cell-input{cursor:pointer; appearance:none; padding:0; height:28px;}
 <body>
 <div id="app">
 
+  <!-- TOP BAR -->
   <div class="topbar">
     <div class="brand">
       <i class="ti ti-chart-candle" style="font-size:26px"></i>
       SKVK <span class="accent">Margin Availability</span>
-      <span class="vbadge">v4.4</span>
+      <span class="vbadge">v4.5</span>
     </div>
     <div class="topbar-right">
       <span class="topbar-date" id="topDate"></span>
     </div>
   </div>
 
+  <!-- TABS -->
   <div class="tabs">
     <div class="tab active" id="tab-entry"    onclick="goTab('entry')"><i class="ti ti-layout-dashboard"></i> Funds Dashboard</div>
     <div class="tab"        id="tab-history"  onclick="goTab('history')"><i class="ti ti-history"></i> Fund History</div>
@@ -308,6 +309,7 @@ select.cell-input{cursor:pointer; appearance:none; padding:0; height:28px;}
     <div class="tab"        id="tab-settings" onclick="goTab('settings')"><i class="ti ti-settings"></i> Settings</div>
   </div>
 
+  <!-- ══ ENTRY PANEL ══ -->
   <div id="panel-entry" class="content">
     <div class="entry-hdr">
       <h2>Funds Dashboard</h2>
@@ -317,6 +319,7 @@ select.cell-input{cursor:pointer; appearance:none; padding:0; height:28px;}
       </div>
     </div>
 
+    <!-- Summary Cards -->
     <div class="sum-strip">
       <div class="scard blue">
         <div class="lbl"><i class="ti ti-chart-candle" style="font-size:13px"></i>Total Available Margin</div>
@@ -340,6 +343,7 @@ select.cell-input{cursor:pointer; appearance:none; padding:0; height:28px;}
       </div>
     </div>
 
+    <!-- Main Table Layout -->
     <div class="tbl-wrap">
       <table>
         <colgroup>
@@ -381,6 +385,7 @@ select.cell-input{cursor:pointer; appearance:none; padding:0; height:28px;}
     </div>
   </div>
 
+  <!-- ══ POSITION SLICING PANEL ══ -->
   <div id="panel-slicing" class="content" style="display:none">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px">
       <h2>Position Slicing</h2>
@@ -407,12 +412,14 @@ select.cell-input{cursor:pointer; appearance:none; padding:0; height:28px;}
     </div>
   </div>
 
+  <!-- ══ HISTORY PANEL ══ -->
   <div id="panel-history" class="content" style="display:none">
     <div class="hist-hdr">
       <h2>Fund History</h2>
       <button class="btn" onclick="loadHistory()"><i class="ti ti-refresh"></i> Refresh</button>
     </div>
 
+    <!-- SECTION 1 — Overall Total -->
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--rlg);
       padding:18px;margin-bottom:20px;box-shadow:var(--shadow)">
       <div style="font-size:13px;font-weight:700;margin-bottom:14px;color:var(--text);
@@ -447,6 +454,7 @@ select.cell-input{cursor:pointer; appearance:none; padding:0; height:28px;}
       <canvas id="histTotalChart" style="width:100%;max-height:250px"></canvas>
     </div>
 
+    <!-- SECTION 2 — Per Account -->
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--rlg);
       padding:18px;box-shadow:var(--shadow)">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px">
@@ -494,6 +502,7 @@ select.cell-input{cursor:pointer; appearance:none; padding:0; height:28px;}
     </div>
   </div>
 
+  <!-- ══ SETTINGS PANEL ══ -->
   <div id="panel-settings" class="content" style="display:none">
     <div class="set-hdr">
       <h2>Account Settings</h2>
@@ -530,6 +539,7 @@ select.cell-input{cursor:pointer; appearance:none; padding:0; height:28px;}
   </div>
 </div>
 
+<!-- Add/Edit Account Modal View Frame -->
 <div class="modal-bg" id="modalBg">
   <div class="modal">
     <h3 id="modalTitle">Add Account</h3>
@@ -582,6 +592,7 @@ select.cell-input{cursor:pointer; appearance:none; padding:0; height:28px;}
   </div>
 </div>
 
+<!-- History Detail Popup Modal View Frame -->
 <div class="modal-bg" id="detailModalBg">
   <div class="modal wide">
     <h3 id="detailModalTitle">Entry Detail</h3>
@@ -1106,7 +1117,7 @@ function updateSummary(){
   document.getElementById('sAMsub').textContent=n+' account'+(n!==1?'s':'')+' configured';
 }
 
-// ══ HISTORICAL LEDGER SYSTEMS ══
+// ══ HISTORICAL LEDGER SYSTEMS (UNIVERSALLY LATEST FIRST) ══
 function populateHistAccSelect(){
   var sel = document.getElementById('histAccSelect');
   if(!sel) return;
@@ -1127,6 +1138,8 @@ async function loadHistory(){
   try{
     var snap = await db.ref('margin/daily').orderByKey().once('value');
     var raw  = snap.val()||{};
+    
+    // Sort universally Descending (Latest Date First)
     allHistData = Object.entries(raw).map(([dateKey,dayData])=>{
       var totals = dayData._totals||{};
       var entries={};
@@ -1142,9 +1155,9 @@ async function loadHistory(){
         totals={cash,collateral:ce,collateralLiquid:cl,available:cash+ce+cl};
       }
       return{dateKey,dateStr,entries,totals};
-    }).sort((a,b)=>a.dateKey.localeCompare(b.dateKey));
+    }).sort((a,b)=>b.dateKey.localeCompare(a.dateKey));
 
-    var years=[...new Set(allHistData.map(r=>r.dateStr.slice(0,4)))].sort().reverse();
+    var years=[...new Set(allHistData.map(r=>r.dateStr.slice(0,4)))]; // Inherits descending
     ['histYearSelectTotal','histYearSelectAcc'].forEach(selId=>{
       var s=document.getElementById(selId); if(!s) return;
       s.innerHTML=years.map(y=>`<option value="${y}">${y}</option>`).join('');
@@ -1160,13 +1173,13 @@ async function loadHistory(){
 
 function renderTotalTable(){
   var tb = document.getElementById('histTotalBody');
-  var rows = [...allHistData].reverse();
+  var rows = [...allHistData]; // Already latest-first
   if(!rows.length){
     tb.innerHTML='<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text2)">No history yet.</td></tr>';
     return;
   }
   tb.innerHTML = rows.map((r,i)=>{
-    var prev  = rows[i+1];
+    var prev  = rows[i+1]; // prev is physically the older date in a descending array
     var delta = prev&&r.totals.available&&prev.totals.available ? r.totals.available-prev.totals.available : null;
     var dTxt  = delta!==null?`<span class="delta ${delta>=0?'pos':'neg'}">${delta>=0?'+':''}${shortFmt(delta)}</span>`:'—';
     var dateDisp = new Date(r.dateStr+'T00:00:00').toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
@@ -1210,13 +1223,13 @@ async function loadAccHistory(){
     if(!e) return null;
     var cash=parseFloat(e.cash)||0, ce=parseFloat(e.collateralEquity)||0, cl=parseFloat(e.collateralLiquid)||0;
     return{dateStr:r.dateStr, dateKey:r.dateKey, cash, ce, cl, am:cash+ce+cl};
-  }).filter(Boolean).sort((a,b)=>a.dateStr.localeCompare(b.dateStr));
+  }).filter(Boolean); // Inherits latest-first sort
 
   var a = accounts[accId]||{};
   document.getElementById('histAccChartTitle').textContent =
     (a.broker||'')+ ' — '+(a.nickname||'') + ' — Year View';
 
-  var rowsDesc = [...accHistData].reverse();
+  var rowsDesc = [...accHistData];
   tb.innerHTML = rowsDesc.map((r,i)=>{
     var prev  = rowsDesc[i+1];
     var delta = prev ? r.am-prev.am : null;
@@ -1382,7 +1395,6 @@ async function onExpandSave(id){
   }
 
   try{
-    // Saves settings without touching the main financial 'savedAt' timestamp
     await db.ref('margin/accounts_latest/'+id).update({strategy, deployPct, sysAlloc});
   }catch(err){ toast('Save error: '+err.message, true); }
 }
@@ -1570,7 +1582,6 @@ function renderSlicing(){
     return;
   }
 
-  // Force Descending Sort for the Chart legends per prompt
   accData.sort((a,b) => b.am - a.am);
 
   var total=accData.reduce((s,d)=>s+d.am,0);
@@ -1588,7 +1599,6 @@ function renderSlicing(){
       byIndex['Unassigned']=(byIndex['Unassigned']||0)+d.am;
     }
   });
-  // Sort Index
   var idxArr = Object.entries(byIndex).map(([k,v])=>({label:k,value:v})).sort((a,b)=>b.value-a.value);
   drawPie('chart-index','legend-index', idxArr, total);
 
@@ -1603,7 +1613,6 @@ function renderSlicing(){
       byTrade['Unassigned']=(byTrade['Unassigned']||0)+d.am;
     }
   });
-  // Sort Trade
   var trdArr = Object.entries(byTrade).map(([k,v])=>({label:k,value:v})).sort((a,b)=>b.value-a.value);
   drawPie('chart-trade','legend-trade', trdArr, total);
 }
@@ -1647,7 +1656,7 @@ function drawPie(canvasId, legendId, data, total){
   ctx.font='bold 15px sans-serif';
   ctx.textAlign='center';
   ctx.textBaseline='middle';
-  ctx.fillText(shortcutFmt(total),cx,cy);
+  ctx.fillText(shortFmt(total),cx,cy);
 
   var legendEl=document.getElementById(legendId);
   legendEl.innerHTML=data.map((d,i)=>{
