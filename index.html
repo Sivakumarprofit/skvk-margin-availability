@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>SKVK Margin Availability v4.2</title>
+<title>SKVK Margin Availability v4.3</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.34.0/dist/tabler-icons.min.css">
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
@@ -292,7 +292,7 @@ tr.dep-full td:nth-child(-n+5){background:#dcfce7}
     <div class="brand">
       <i class="ti ti-chart-candle" style="font-size:26px"></i>
       SKVK <span class="accent">Margin Availability</span>
-      <span class="vbadge">v4.2</span>
+      <span class="vbadge">v4.3</span>
     </div>
     <div class="topbar-right">
       <span class="topbar-date" id="topDate"></span>
@@ -619,7 +619,17 @@ function toast(msg,isErr) {
   el._t=setTimeout(()=>el.style.display='none',3200);
 }
 
-function shortcutFmt(n) {
+// Fixed missing reference: Using the original formatting logic
+function shortFmt(n) {
+  if(!n||isNaN(n)) return '—';
+  n=Math.abs(parseFloat(n));
+  if(n>=10000000) return '₹'+(n/10000000).toFixed(2)+' Cr';
+  if(n>=100000)   return '₹'+(n/100000).toFixed(2)+' L';
+  return '₹'+n.toFixed(2);
+}
+
+// Dedicated chart legend spacing format
+function fmtCrL(n){
   if(!n||isNaN(n)) return '—';
   n=Math.abs(parseFloat(n));
   if(n>=10000000) return '₹ '+(n/10000000).toFixed(2)+' Cr';
@@ -1599,7 +1609,7 @@ function drawPie(canvasId, legendId, data, total){
   ctx.font='bold 15px sans-serif';
   ctx.textAlign='center';
   ctx.textBaseline='middle';
-  ctx.fillText(shortcutFmt(total),cx,cy);
+  ctx.fillText(shortFmt(total),cx,cy);
 
   var legendEl=document.getElementById(legendId);
   legendEl.innerHTML=data.map((d,i)=>{
@@ -1612,7 +1622,7 @@ function drawPie(canvasId, legendId, data, total){
       <div style="display:flex; align-items:center; gap:12px; flex-shrink:0">
         <span style="font-variant-numeric:tabular-nums; text-align:right; width:45px; font-weight:600; color:var(--text); font-size:12px">${pct}%</span>
         <span style="color:var(--border2); font-size:11px">|</span>
-        <span style="font-variant-numeric:tabular-nums; text-align:right; width:75px; font-weight:700; color:var(--blue); font-size:12px">${shortcutFmt(d.value)}</span>
+        <span style="font-variant-numeric:tabular-nums; text-align:right; width:75px; font-weight:700; color:var(--blue); font-size:12px">${fmtCrL(d.value)}</span>
       </div>
     </div>`;
   }).join('');
