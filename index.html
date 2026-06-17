@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>SKVK Margin Availability v3.9</title>
+<title>SKVK Margin Availability v3.10</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.34.0/dist/tabler-icons.min.css">
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
@@ -292,7 +292,7 @@ tr.dep-full td:nth-child(-n+5){background:#dcfce7}
     <div class="brand">
       <i class="ti ti-chart-candle" style="font-size:26px"></i>
       SKVK <span class="accent">Margin Availability</span>
-      <span class="vbadge">v3.9</span>
+      <span class="vbadge">v3.10</span>
     </div>
     <div class="topbar-right">
       <span class="topbar-date" id="topDate"></span>
@@ -591,6 +591,57 @@ tr.dep-full td:nth-child(-n+5){background:#dcfce7}
 <div class="toast" id="toast"></div>
 
 <script>
+// ══ GENERAL LAYOUT PARSER CORE UTILITIES (PARSED AT FIRST COMPILATION PHASE) ══
+function esc(s){
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function inr2(n){
+  if(n===null||n===undefined||isNaN(n)||n==='') return '—';
+  var neg=n<0; n=Math.abs(n);
+  var parts=n.toFixed(2).split('.');
+  var s=parts[0],dec=parts[1],r='';
+  if(s.length>3){r=','+s.slice(-3);s=s.slice(0,-3);
+    while(s.length>2){r=','+s.slice(-2)+r;s=s.slice(0,-2);}r=s+r;}
+  else r=s;
+  return (neg?'-':'')+'₹'+r+'.'+dec;
+}
+
+function fmtDate(d){
+  if(!d) return '—';
+  return new Date(d+'T00:00:00').toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+}
+
+function toast(msg,isErr){
+  var el=document.getElementById('toast');
+  el.textContent=msg;el.className='toast '+(isErr?'err':'ok');
+  el.style.display='block';clearTimeout(el._t);
+  el._t=setTimeout(()=>el.style.display='none',3200);
+}
+
+function shortcutFmt(n){
+  if(!n||isNaN(n)) return '—';
+  n=Math.abs(parseFloat(n));
+  if(n>=10000000) return '₹ '+(n/10000000).toFixed(2)+' Cr';
+  if(n>=100000)   return '₹ '+(n/100000).toFixed(2)+' L';
+  return '₹ '+n.toFixed(0);
+}
+
+// ══ STATE GLOBALS ══
+var db;
+var accounts         = {};
+var latestPerAccount = {};
+var editId           = null;
+var histData         = [];
+var saveTimers       = {};
+var focusCache       = {};
+var chartInstances   = {};
+var PIE_COLORS       = [
+  '#1565c0','#0d7a3e','#d97706','#6d28d9','#0d7377',
+  '#c0392b','#84cc16','#0891b2','#7c3aed','#b45309',
+  '#059669','#dc2626','#2563eb','#16a34a','#ca8a04'
+];
+
 // ══ CRITICAL REPAIRED FIREBASE CONFIGURATION OBJECT ══
 var FIREBASE_CONFIG = {
   apiKey:            "AIzaSyBLNXE6A-EJo1WS5cFJZM3B2YxqcJMJI00",
@@ -601,15 +652,6 @@ var FIREBASE_CONFIG = {
   messagingSenderId: "341103062702",
   appId:             "1:341103062702:web:fadf6ca98e4b1eb2f2473f"
 };
-
-// ══ STATE GLOBALS ══
-var db;
-var accounts         = {};
-var latestPerAccount = {};
-var editId           = null;
-var histData         = [];
-var saveTimers       = {};
-var focusCache       = {};
 
 // ══ BOOT ══
 (function boot(){
@@ -846,7 +888,7 @@ function onBlurInput(el, id, field){
   saveTimers[id] = setTimeout(()=>saveRow(id), 600);
 }
 
-// ══ TWO-LINE STRING BUILDERS ══
+// ══ STRING GRID METRIC BUILDERS ══
 function toLakh(n){ return (n/100000); }
 function fmtLakh(n){ return toLakh(n).toFixed(2)+'L'; }
 
@@ -909,6 +951,7 @@ function fmtDateShort(d){
   var months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   return dt.getDate()+'-'+months[dt.getMonth()];
 }
+// Manually triggers calendar popup picker inside layout parameters
 function expandDate(id){
   var inp  = document.getElementById('f_date_'+id);
   var disp = document.getElementById('f_date_disp_'+id);
@@ -1045,14 +1088,6 @@ function refreshTotalRow(){
   tr.cells[5].innerHTML=`<span style="color:#64b5f6;font-size:13px">${inr2(tots.am)}</span>`;
 }
 
-function shortFmt(n){
-  if(!n||isNaN(n)) return '—';
-  n=Math.abs(parseFloat(n));
-  if(n>=10000000) return '₹'+(n/10000000).toFixed(2)+' Cr';
-  if(n>=100000)   return '₹'+(n/100000).toFixed(2)+' L';
-  return '₹'+n.toFixed(2);
-}
-
 function updateSummary(){
   var tots=calcTotals();
   document.getElementById('sAM').textContent  = shortFmt(tots.am);
@@ -1063,7 +1098,7 @@ function updateSummary(){
   document.getElementById('sAMsub').textContent=n+' account'+(n!==1?'s':'')+' configured';
 }
 
-// ══ HISTORICAL LEDGER SYSTEMS ══
+// ══ HISTORICAL LEDGER SYSTEMS YIELD GENERATION ══
 var allHistData   = [];
 var accHistData   = [];
 
@@ -1262,240 +1297,7 @@ function drawLineChart(canvasId, rows, color){
   });
 }
 
-// ══ ACCOUNT PROPERTIES SYSTEM ══
-function renderAccList(){
-  var el=document.getElementById('accList');
-  var list=Object.entries(accounts);
-  if(!list.length){
-    el.innerHTML=`<div class="empty"><i class="ti ti-building-bank"></i>
-      <h3>No accounts yet</h3><p>Add broker accounts to start tracking.</p></div>`;
-    return;
-  }
-  el.innerHTML=list.map(([id,a])=>`
-    <div class="acc-item">
-      <div class="acc-item-icon"><i class="ti ti-building-bank"></i></div>
-      <div class="acc-item-info">
-        <div class="acc-item-name">${esc(a.nickname||'Account')}
-          ${a.accType==='bank'?'<span style="font-size:9px;background:#0d7a3e;color:#fff;padding:1px 6px;border-radius:3px;margin-left:4px">BANK</span>':''}</div>
-        <div class="acc-item-meta">
-          <span><i class="ti ti-briefcase" style="font-size:10px"></i> ${esc(a.broker||'—')}</span>
-          ${a.clientId?`<span><i class="ti ti-fingerprint" style="font-size:10px"></i> ${esc(a.clientId)}</span>`:''}
-          ${a.capital ?`<span><i class="ti ti-currency-rupee" style="font-size:10px"></i> Planned: ${inr2(a.capital)}</span>`:''}
-          ${a.minCash ?`<span><i class="ti ti-cash" style="font-size:10px"></i> Min Cash: ${inr2(a.minCash)}</span>`:''}
-          ${a.combinations&&a.combinations.length?`<span><i class="ti ti-cpu" style="font-size:10px"></i> ${a.combinations.map(c=>(c.sysName||c.index)+'/'+c.trade+' '+c.pct+'%').join(' · ')}</span>`:''}
-          ${a.system  ?`<span><i class="ti ti-cpu" style="font-size:10px"></i> ${esc(a.system.length>35?a.system.slice(0,35)+'…':a.system)}</span>`:''}
-        </div>
-      </div>
-      <div class="acc-item-actions">
-        <button class="btn sm" onclick="openModal('${id}')"><i class="ti ti-edit"></i></button>
-        <button class="btn sm danger" onclick="delAccount('${id}')"><i class="ti ti-trash"></i></button>
-      </div>
-    </div>`).join('');
-}
-
-async function onExpandSave(id){
-  var strategy  = document.getElementById('f_strategy_'+id)?.value.trim()||'';
-  var deployPct = parseFloat(document.getElementById('f_deploy_'+id)?.value)||0;
-  deployPct = Math.min(100, Math.max(0, deployPct));
-
-  if(!latestPerAccount[id]) latestPerAccount[id]={};
-  latestPerAccount[id].strategy  = strategy;
-  latestPerAccount[id].deployPct = deployPct;
-
-  var row = document.getElementById('row_'+id);
-  if(row){
-    row.className = deployPct===0?'dep-none':deployPct===100?'dep-full':deployPct>=51?'dep-mid':'dep-low';
-  }
-  var accCell = document.getElementById('acccell_'+id);
-  if(accCell){
-    var a = accounts[id]||{};
-    var nameEl = accCell.querySelector('.acc-name');
-    if(nameEl){
-      var isWarn = false;
-      var e = latestPerAccount[id]||{};
-      var cash = parseFloat(e.cash)||0;
-      var ce = parseFloat(e.collateralEquity)||0;
-      var cl = parseFloat(e.collateralLiquid)||0;
-      var am = cash+ce+cl;
-      var cashComp = am>0?((cash+cl)/am*100):0;
-      var minCash = parseFloat(a.minCash)||0;
-      var anyWarn = (minCash>0&&cash<minCash)||(am>0&&cashComp<50);
-      var accBadge = a.accType==='bank' ? `<span style="font-size:9px;background:#0d7a3e;color:#fff;padding:1px 5px;border-radius:3px;margin-left:4px">BANK</span>` : '';
-      nameEl.innerHTML =
-        (anyWarn?'<i class="ti ti-alert-triangle warn-icon"></i> ':'')+
-        esc(a.broker||'')+' — '+esc(a.nickname||'')+accBadge+
-        (deployPct===100?'<i class="ti ti-lock" style="font-size:18px;margin-left:4px;color:#14532d;vertical-align:middle"></i>':'');
-    }
-  }
-
-  try{
-    await db.ref('margin/accounts_latest/'+id).update({strategy, deployPct, savedAt: Date.now()});
-  }catch(err){ toast('Save error: '+err.message, true); }
-}
-
-function onBrokerChange(sel){
-  var otherInput = document.getElementById('m_broker_other');
-  if(sel.value==='__other__'){
-    otherInput.style.display='block';
-    otherInput.focus();
-  } else {
-    otherInput.style.display='none';
-    otherInput.value='';
-  }
-}
-
-function toggleAccType(){
-  var t=document.getElementById('m_acctype').value;
-  document.querySelectorAll('.broker-only').forEach(el=>{
-    el.style.display=t==='broker'?'flex':'none';
-  });
-}
-
-function addCombination(sysName='', index='', trade='', pct=''){
-  var container = document.getElementById('m_combinations');
-  var row = document.createElement('div');
-  row.style.cssText='display:flex;flex-direction:column;gap:4px;padding:8px;background:var(--bg3);border-radius:var(--r);border:1px solid var(--border)';
-  row.innerHTML=`
-    <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
-      <input type="text" placeholder="System Name (e.g. Silver M)" value="${esc(sysName)}" maxlength="25"
-        style="height:32px;padding:0 8px;border-radius:var(--r);border:1px solid var(--border2);
-               background:var(--bg2);color:var(--text);font-size:12px;font-family:inherit;flex:1;min-width:140px"
-        class="combo-sysname">
-      <button type="button" onclick="this.closest('div[style]').remove();updateComboTotal()"
-        style="height:32px;width:32px;border-radius:var(--r);border:1px solid var(--red);
-               background:none;color:var(--red);cursor:pointer;font-size:14px;display:flex;
-               align-items:center;justify-content:center;flex-shrink:0">
-        <i class="ti ti-x"></i>
-      </button>
-    </div>
-    <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
-      <input type="text" placeholder="Index (e.g. NIFTY)" value="${esc(index)}"
-        style="height:32px;padding:0 8px;border-radius:var(--r);border:1px solid var(--border2);
-               background:var(--bg2);color:var(--text);font-size:12px;font-family:inherit;width:130px"
-        oninput="updateComboTotal()" class="combo-index">
-      <input type="text" placeholder="Style (e.g. BTST)" value="${esc(trade)}"
-        style="height:32px;padding:0 8px;border-radius:var(--r);border:1px solid var(--border2);
-               background:var(--bg2);color:var(--text);font-size:12px;font-family:inherit;width:120px"
-        oninput="updateComboTotal()" class="combo-trade">
-      <input type="number" placeholder="%" min="0" max="100" value="${pct}"
-        style="height:32px;padding:0 8px;border-radius:var(--r);border:1px solid var(--border2);
-               background:var(--bg2);color:var(--text);font-size:12px;font-family:inherit;width:70px"
-        oninput="updateComboTotal()" class="combo-pct">
-    </div>`;
-  container.appendChild(row);
-  updateComboTotal();
-}
-
-function updateComboTotal(){
-  var pcts = Array.from(document.querySelectorAll('.combo-pct')).map(i=>parseFloat(i.value)||0);
-  var total = pcts.reduce((s,v)=>s+v,0);
-  var el = document.getElementById('m_combo_total');
-  if(!el) return;
-  el.textContent = 'Total: '+total+'%';
-  el.style.color = total===100 ? 'var(--green)' : total>100 ? 'var(--red)' : 'var(--amber)';
-}
-
-function getCombinations(){
-  var rows = document.getElementById('m_combinations').children;
-  var combos = [];
-  Array.from(rows).forEach(row=>{
-    var sysName = row.querySelector('.combo-sysname')?.value.trim()||'';
-    var idx     = row.querySelector('.combo-index')?.value.trim()||'';
-    var trade   = row.querySelector('.combo-trade')?.value.trim()||'';
-    var pct     = parseFloat(row.querySelector('.combo-pct')?.value)||0;
-    if(sysName||idx||trade) combos.push({sysName, index:idx, trade, pct});
-  });
-  return combos;
-}
-
-function openModal(id){
-  editId=id||null;
-  document.getElementById('modalTitle').textContent=id?'Edit Account':'Add Account';
-  var a=id&&accounts[id]?accounts[id]:{};
-  document.getElementById('m_acctype').value   =a.accType||'broker';
-  var brokerSel   = document.getElementById('m_broker');
-  var brokerOther = document.getElementById('m_broker_other');
-  var knownBrokers=['Zebu','Shoonya','Jainam','IIFL','Zerodha','AliceBlue','Upstox','SBI','HDFC','ICICI','Axis','Kotak',''];
-  if(a.broker && !knownBrokers.includes(a.broker)){
-    brokerSel.value='__other__'; brokerOther.style.display='block'; brokerOther.value=a.broker;
-  } else {
-    brokerSel.value=a.broker||''; brokerOther.style.display='none'; brokerOther.value='';
-  }
-  document.getElementById('m_clientId').value=a.clientId||'';
-  document.getElementById('m_nick').value    =a.nickname||'';
-  document.getElementById('m_capital').value =a.capital||'';
-  document.getElementById('m_mincash').value =a.minCash||'';
-  document.getElementById('m_system').value  =a.system||'';
-  
-  var container = document.getElementById('m_combinations');
-  container.innerHTML='';
-  if(a.combinations&&a.combinations.length){
-    a.combinations.forEach(c=>addCombination(c.sysName||'',c.index||'',c.trade||'',c.pct||''));
-  } else if(a.indexType||a.tradeStyle){
-    addCombination('',a.indexType||'', a.tradeStyle||'', 100);
-  } else {
-    addCombination();
-  }
-  toggleAccType();
-  document.getElementById('modalBg').classList.add('open');
-}
-function closeModal(){document.getElementById('modalBg').classList.remove('open');editId=null;}
-
-async function saveAccount(){
-  var accType   =document.getElementById('m_acctype').value;
-  var brokerSel =document.getElementById('m_broker').value.trim();
-  var broker    =brokerSel==='__other__'?document.getElementById('m_broker_other').value.trim():brokerSel;
-  var nick      =document.getElementById('m_nick').value.trim();
-  var cid       =document.getElementById('m_clientId').value.trim();
-  var cap       =parseFloat(document.getElementById('m_capital').value)||0;
-  var minCash   =accType==='broker'?(parseFloat(document.getElementById('m_mincash').value)||0):0;
-  var sys       =accType==='broker'?document.getElementById('m_system').value.trim():'';
-  var combinations=accType==='broker'?getCombinations():[];
-  if(!broker||!nick){toast('Name and Nickname are required',true);return;}
-  var obj={accType,broker,clientId:cid,nickname:nick,capital:cap,minCash,combinations,system:sys,updAt:Date.now()};
-  try{
-    if(editId){await db.ref('margin/accounts/'+editId).update(obj);toast('Updated ✓');}
-    else{await db.ref('margin/accounts').push(obj);toast('Account added ✓');}
-    closeModal();
-  }catch(e){toast('Error: '+e.message,true);}
-}
-async function delAccount(id){
-  if(!confirm('Delete this account?')) return;
-  try{await db.ref('margin/accounts/'+id).remove();toast('Deleted');}
-  catch(e){toast('Error: '+e.message,true);}
-}
-async function deleteOldData(){
-  var before=document.getElementById('delBefore').value;
-  if(!before){toast('Select a date first',true);return;}
-  if(!confirm('Delete all daily entries before '+fmtDate(before)+'?')) return;
-  try{
-    var snap=await db.ref('margin/daily').once('value');
-    var raw=snap.val()||{};
-    var beforeKey=before.replace(/-/g,'');
-    var toDelete=Object.keys(raw).filter(k=>k<beforeKey&&k!=='_totals');
-    if(!toDelete.length){toast('No entries found before that date');return;}
-    var updates={};
-    toDelete.forEach(k=>updates['margin/daily/'+k]=null);
-    await db.ref().update(updates);
-    toast(toDelete.length+' day(s) deleted ✓');
-  }catch(e){toast('Error: '+e.message,true);}
-}
-async function deleteAllData(){
-  if(!confirm('⚠️ Delete ALL history? Cannot be undone.')) return;
-  if(!confirm('Absolutely sure? All daily history will be permanently deleted.')) return;
-  try{await db.ref('margin/daily').remove();toast('All history deleted');}
-  catch(e){toast('Error: '+e.message,true);}
-}
-
-// ══ DATA ALIGNMENTS ══
-function shortcutFmt(n){
-  if(!n||isNaN(n)) return '—';
-  n=Math.abs(parseFloat(n));
-  if(n>=10000000) return '₹ '+(n/10000000).toFixed(2)+' Cr';
-  if(n>=100000)   return '₹ '+(n/100000).toFixed(2)+' L';
-  return '₹ '+n.toFixed(0);
-}
-
+// ══ POSITION ALLOCATION SLICING SYSTEMS ══
 function renderSlicing(){
   var list=Object.entries(accounts);
   if(!list.length){
@@ -1515,7 +1317,7 @@ function renderSlicing(){
 
   if(!accData.length){
     ['accounts','index','trade'].forEach(k=>{
-      document.getElementById('legend-'+k).innerHTML='<div style="text-align:center;color:var(--text3);font-size:12px;padding:10px">No data yet — enter margin values first</div>';
+      document.getElementById('legend-'+k).innerHTML='<div style="text-align:center;color(--text3);font-size:12px;padding:10px">No data yet — enter margin values first</div>';
     });
     return;
   }
