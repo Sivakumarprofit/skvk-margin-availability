@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>SKVK Margin Availability v4.5</title>
+<title>SKVK Margin Availability v4.6</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.34.0/dist/tabler-icons.min.css">
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
@@ -114,15 +114,16 @@ table{width:100%;border-collapse:collapse;min-width:1080px;table-layout:fixed}
 col.c-acc  {width:165px}
 col.c-date {width:65px}
 col.c-cash {width:120px}
-col.c-cl   {width:110px}
 col.c-ce   {width:110px}
+col.c-cl   {width:110px}
 col.c-am   {width:130px}
 col.c-cpct {width:105px}
 col.c-bpct {width:150px}
 col.c-epct {width:110px}
-col.c-strat{width:130px}
-col.c-dep  {width:105px}
-col.c-sysalloc {width:125px}
+col.c-strat{width:180px}
+col.c-dep  {width:85px}
+col.c-sysalloc {width:95px}
+col.c-caplot   {width:110px}
 
 thead th{background:var(--navy);padding:10px 12px;
   font-size:10px;font-weight:700;color:#fff;white-space:normal;
@@ -294,7 +295,7 @@ select.cell-input{cursor:pointer; appearance:none; padding:0; height:28px;}
     <div class="brand">
       <i class="ti ti-chart-candle" style="font-size:26px"></i>
       SKVK <span class="accent">Margin Availability</span>
-      <span class="vbadge">v4.5</span>
+      <span class="vbadge">v4.6</span>
     </div>
     <div class="topbar-right">
       <span class="topbar-date" id="topDate"></span>
@@ -350,8 +351,8 @@ select.cell-input{cursor:pointer; appearance:none; padding:0; height:28px;}
           <col class="c-acc">
           <col class="c-date">
           <col class="c-cash">
-          <col class="c-cl">
           <col class="c-ce">
+          <col class="c-cl">
           <col class="c-am">
           <col class="c-cpct">
           <col class="c-bpct">
@@ -359,25 +360,27 @@ select.cell-input{cursor:pointer; appearance:none; padding:0; height:28px;}
           <col class="c-strat">
           <col class="c-dep">
           <col class="c-sysalloc">
+          <col class="c-caplot">
         </colgroup>
         <thead>
           <tr>
             <th>Account</th>
             <th>Date</th>
             <th class="r">Cash Balance</th>
-            <th class="r">Col. Liquid</th>
             <th class="r">Col. Equity</th>
+            <th class="r">Col. Liquid</th>
             <th class="r">Total Margin</th>
             <th class="c">MTM Cash</th>
             <th class="c">Cash Component %</th>
             <th class="c">Non-Cash %</th>
-            <th class="c">System</th>
-            <th class="c" style="white-space:normal; word-wrap:break-word">Capital Allocation %</th>
-            <th class="c">System Allocation</th>
+            <th class="c" style="white-space:normal;line-height:1.3">Systems<br>Configured</th>
+            <th class="c" style="white-space:normal;line-height:1.3">Capital<br>Allocation %</th>
+            <th class="c" style="white-space:normal;line-height:1.3">System<br>Allocation</th>
+            <th class="c" style="white-space:normal;line-height:1.3">Capital Req.<br>for 1 Lot</th>
           </tr>
         </thead>
         <tbody id="entryBody">
-          <tr><td colspan="12" style="text-align:center;padding:40px;color:var(--text2)">
+          <tr><td colspan="13" style="text-align:center;padding:40px;color:var(--text2)">
             <i class="ti ti-refresh spin"></i> Loading…
           </td></tr>
         </tbody>
@@ -742,7 +745,8 @@ function loadLatest() {
         active.id === 'f_ce_'+id ||
         active.id === 'f_strategy_'+id ||
         active.id === 'f_deploy_'+id ||
-        active.id === 'f_sysalloc_'+id
+        active.id === 'f_sysalloc_'+id ||
+        active.id === 'f_caplot_'+id
       );
       if(!editing) latestPerAccount[id] = fresh[id];
     });
@@ -754,7 +758,7 @@ function renderTable() {
   var tb   = document.getElementById('entryBody');
   var list = Object.entries(accounts);
   if(!list.length){
-    tb.innerHTML=`<tr><td colspan="12"><div class="empty">
+    tb.innerHTML=`<tr><td colspan="13"><div class="empty">
       <i class="ti ti-building-bank"></i><h3>No accounts configured</h3>
       <p>Go to <strong>Settings</strong> to add accounts.</p></div></td></tr>`;
     updateSummary(); return;
@@ -783,6 +787,7 @@ function renderTable() {
     var strategy  = e.strategy||'';
     var deployPct = e.deployPct!==undefined ? parseFloat(e.deployPct) : '';
     var sysAlloc  = e.sysAlloc||'';
+    var capitalPerLot = e.capitalPerLot!==undefined && e.capitalPerLot>0 ? parseFloat(e.capitalPerLot) : '';
 
     var sysClass = 'sys-none';
     if(sysAlloc==='Locked') sysClass = 'sys-locked';
@@ -828,17 +833,17 @@ function renderTable() {
         ${isBank
           ? '<span style="color:var(--text3);font-size:11px">N/A</span>'
           : `<input type="text" inputmode="decimal" class="cell-input r"
-              id="f_cl_${id}" value="${clDisp}" placeholder="0.00"
-              onfocus="onFocusInput(this,'${id}','collateralLiquid')"
-              onblur="onBlurInput(this,'${id}','collateralLiquid')">`}
+              id="f_ce_${id}" value="${ceDisp}" placeholder="0.00"
+              onfocus="onFocusInput(this,'${id}','collateralEquity')"
+              onblur="onBlurInput(this,'${id}','collateralEquity')">`}
       </td>
       <td class="r">
         ${isBank
           ? '<span style="color:var(--text3);font-size:11px">N/A</span>'
           : `<input type="text" inputmode="decimal" class="cell-input r"
-              id="f_ce_${id}" value="${ceDisp}" placeholder="0.00"
-              onfocus="onFocusInput(this,'${id}','collateralEquity')"
-              onblur="onBlurInput(this,'${id}','collateralEquity')">`}
+              id="f_cl_${id}" value="${clDisp}" placeholder="0.00"
+              onfocus="onFocusInput(this,'${id}','collateralLiquid')"
+              onblur="onBlurInput(this,'${id}','collateralLiquid')">`}
       </td>
       <td class="r">
         <span class="total-cell" id="am_${id}">${am>0?`<div style="display:flex;flex-direction:column;align-items:flex-end;gap:1px"><span style="font-size:14px;font-weight:800;color:var(--blue)">${fmtLakh(am)}</span><span style="font-size:11px;font-weight:400;color:var(--text2)">${inr2(am)}</span></div>`:'—'}</span>
@@ -881,6 +886,17 @@ function renderTable() {
           <option value="Locked" ${sysAlloc==='Locked'?'selected':''}>Locked</option>
         </select>
       </td>
+      <td class="c">
+        ${isBank
+          ? '<span style="color:var(--text3);font-size:11px">N/A</span>'
+          : `<div style="display:flex;flex-direction:column;align-items:center;gap:1px">
+              <input type="number" class="cell-input" min="0" step="0.01"
+                id="f_caplot_${id}" value="${capitalPerLot!==''?capitalPerLot:''}" placeholder="e.g. 2.50"
+                onfocus="focusCache['caplot_'+id]=String(this.value)"
+                onblur="onCapPerLotBlur('${id}')">
+              ${capitalPerLot!==''?`<span style="font-size:10px;color:var(--text3);pointer-events:none">${capitalPerLot.toFixed(2)} L</span>`:''}
+            </div>`}
+      </td>
     </tr>`;
   }).join('');
 
@@ -889,9 +905,10 @@ function renderTable() {
     <td><strong>TOTAL</strong></td>
     <td></td>
     <td class="r">${inr2(tots.cash)}</td>
-    <td class="r">${inr2(tots.cl)}</td>
     <td class="r">${inr2(tots.ce)}</td>
+    <td class="r">${inr2(tots.cl)}</td>
     <td class="r" style="color:#64b5f6;font-size:13px">${inr2(tots.am)}</td>
+    <td class="c"></td>
     <td class="c"></td>
     <td class="c"></td>
     <td class="c"></td>
@@ -1102,8 +1119,8 @@ function refreshTotalRow(){
   var tr=document.querySelector('#entryBody tr.total-row');
   if(!tr) return;
   tr.cells[2].textContent=inr2(tots.cash);
-  tr.cells[3].textContent=inr2(tots.cl);
-  tr.cells[4].textContent=inr2(tots.ce);
+  tr.cells[3].textContent=inr2(tots.ce);
+  tr.cells[4].textContent=inr2(tots.cl);
   tr.cells[5].innerHTML=`<span style="color:#64b5f6;font-size:13px">${inr2(tots.am)}</span>`;
 }
 
@@ -1396,6 +1413,33 @@ async function onExpandSave(id){
 
   try{
     await db.ref('margin/accounts_latest/'+id).update({strategy, deployPct, sysAlloc});
+  }catch(err){ toast('Save error: '+err.message, true); }
+}
+
+async function onCapPerLotBlur(id){
+  var el = document.getElementById('f_caplot_'+id);
+  if(!el) return;
+  var val = parseFloat(el.value)||0;
+  // No change check
+  if(focusCache['caplot_'+id] === String(el.value) && !isNaN(parseFloat(focusCache['caplot_'+id]))) return;
+  if(!latestPerAccount[id]) latestPerAccount[id]={};
+  latestPerAccount[id].capitalPerLot = val;
+  // Refresh L label below input
+  var cell = el.closest('td');
+  if(cell){
+    var lbl = cell.querySelector('span');
+    if(lbl && val>0){ lbl.textContent = val.toFixed(2)+' L'; lbl.style.display=''; }
+    else if(lbl){ lbl.style.display='none'; }
+    else if(val>0){
+      var sp = document.createElement('span');
+      sp.style.cssText='font-size:10px;color:var(--text3);pointer-events:none';
+      sp.textContent = val.toFixed(2)+' L';
+      el.parentNode.appendChild(sp);
+    }
+  }
+  try{
+    await db.ref('margin/accounts_latest/'+id).update({capitalPerLot: val, savedAt: Date.now()});
+    toast('Capital / lot saved ✓');
   }catch(err){ toast('Save error: '+err.message, true); }
 }
 
