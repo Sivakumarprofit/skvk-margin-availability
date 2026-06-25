@@ -6,10 +6,11 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>SKVK Margin Availability v4.10</title>
+<title>SKVK Margin Availability v5.0</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.34.0/dist/tabler-icons.min.css">
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <style>
 :root{
   --bg:#f0f2f5; --bg2:#ffffff; --bg3:#e8eaed;
@@ -38,6 +39,31 @@
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,sans-serif;
   font-size:13px;color:var(--text);background:var(--bg);min-height:100vh}
 
+/* ── LOGIN SCREEN ── */
+#loginScreen{display:none;min-height:100vh;align-items:center;
+  justify-content:center;padding:20px;background:var(--navy2)}
+.login-box{background:var(--bg2);border:1px solid var(--border);border-radius:16px;
+  padding:44px 40px;max-width:400px;width:100%;box-shadow:0 16px 48px rgba(0,0,0,.28);
+  text-align:center}
+.login-logo{width:72px;height:72px;background:var(--navy);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;margin:0 auto 20px}
+.login-logo i{font-size:34px;color:#64b5f6}
+.login-title{font-size:22px;font-weight:800;color:var(--text);margin-bottom:6px}
+.login-sub{font-size:12px;color:var(--text2);margin-bottom:32px;line-height:1.6}
+.google-btn{width:100%;height:50px;display:flex;align-items:center;
+  justify-content:center;gap:12px;background:#fff;border:1.5px solid #dadce0;
+  border-radius:6px;cursor:pointer;font-size:15px;font-weight:600;color:#3c4043;
+  font-family:inherit;box-shadow:0 1px 4px rgba(0,0,0,.1);transition:box-shadow .2s}
+.google-btn:hover{box-shadow:0 3px 10px rgba(0,0,0,.18)}
+.login-error{font-size:12px;color:var(--red);margin-top:14px;display:none;
+  padding:10px 14px;background:var(--red-lt);border-radius:var(--r);text-align:left;
+  border:1px solid rgba(192,57,43,.2)}
+.login-spinner{display:none;margin-top:18px}
+.login-spinner-ring{width:26px;height:26px;border:3px solid var(--border);
+  border-top-color:var(--blue);border-radius:50%;
+  animation:spin .8s linear infinite;margin:0 auto}
+.login-note{font-size:11px;color:var(--text3);margin-top:22px}
+
 /* TOP BAR */
 .topbar{background:var(--navy);height:64px;padding:0 20px;
   display:flex;align-items:center;justify-content:space-between;
@@ -53,6 +79,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,sans-seri
 .topbar-date{font-size:13px;font-weight:600;color:rgba(255,255,255,.85);
   background:rgba(255,255,255,.1);padding:4px 12px;border-radius:20px;
   border:1px solid rgba(255,255,255,.2);white-space:nowrap}
+.signout-btn{height:30px;padding:0 12px;border-radius:20px;border:1px solid rgba(255,255,255,.25);
+  background:transparent;color:rgba(255,255,255,.7);font-size:11px;font-family:inherit;
+  cursor:pointer;display:flex;align-items:center;gap:5px;font-weight:600;transition:all .15s}
+.signout-btn:hover{background:rgba(255,255,255,.1);color:#fff}
 
 /* TABS */
 .tabs{background:var(--navy2);display:flex;padding:0 20px;
@@ -214,7 +244,6 @@ select.cell-input{cursor:pointer; appearance:none; padding:0; height:28px;}
 .detail-table th.r{text-align:right}
 .detail-table td{padding:6px 10px;border-bottom:1px solid var(--border)}
 .detail-table td.r{text-align:right;font-variant-numeric:tabular-nums}
-
 .detail-table tr:last-child td{border-bottom:none}
 .detail-table tr.warn-row td{background:var(--warn-bg)}
 
@@ -230,6 +259,19 @@ select.cell-input{cursor:pointer; appearance:none; padding:0; height:28px;}
 .acc-item-name{font-size:13px;font-weight:700;margin-bottom:3px}
 .acc-item-meta{font-size:11px;color:var(--text2);display:flex;gap:10px;flex-wrap:wrap}
 .acc-item-actions{display:flex;gap:6px;flex-shrink:0}
+
+/* Access control section in Settings */
+.access-section{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rlg);
+  padding:18px;margin-bottom:20px;box-shadow:var(--shadow)}
+.access-section h3{font-size:13px;font-weight:700;margin-bottom:4px;
+  display:flex;align-items:center;gap:6px;color:var(--navy)}
+.email-row{display:flex;align-items:center;justify-content:space-between;
+  padding:10px 14px;border:1px solid var(--border);border-radius:8px;margin-bottom:8px}
+.email-row.admin{background:var(--blue-lt);border-color:rgba(21,101,192,.2)}
+.email-row-left{display:flex;align-items:center;gap:10px}
+.email-row-left i{font-size:16px}
+.email-addr{font-size:13px;font-weight:600;color:var(--text)}
+.email-role{font-size:10px;color:var(--blue);font-weight:700;margin-top:1px}
 
 .danger-section{background:var(--bg2);border:1px solid var(--red);border-radius:var(--rlg);
   padding:18px;margin-top:6px}
@@ -325,14 +367,48 @@ select.cell-input{cursor:pointer; appearance:none; padding:0; height:28px;}
 </style>
 </head>
 <body>
-<div id="app">
+
+<!-- ══ LOGIN SCREEN ══ -->
+<div id="loginScreen" style="display:none;min-height:100vh;align-items:center;justify-content:center;padding:20px;background:var(--navy2);flex-direction:column">
+  <div class="login-box">
+    <div class="login-logo">
+      <i class="ti ti-chart-candle"></i>
+    </div>
+    <div class="login-title">SKVK Margin Availability</div>
+    <div class="login-sub">Sign in with your authorised Google account to access the dashboard.</div>
+    <button class="google-btn" id="googleSignInBtn" onclick="signInWithGoogle()">
+      <svg width="20" height="20" viewBox="0 0 48 48">
+        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+        <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+      </svg>
+      Sign in with Google
+    </button>
+    <div class="login-error" id="loginError"></div>
+    <div class="login-spinner" id="loginSpinner">
+      <div class="login-spinner-ring"></div>
+      <p style="font-size:11px;color:var(--text3);margin-top:8px">Signing in…</p>
+    </div>
+    <p class="login-note">Access restricted to authorised accounts only</p>
+  </div>
+</div>
+
+<!-- ══ MAIN APP ══ -->
+<div id="app" style="display:none">
 
   <!-- TOP BAR -->
   <div class="topbar">
+    <div style="display:flex;align-items:center;gap:8px;z-index:1">
+      <button class="signout-btn" onclick="signOut()" title="Sign out">
+        <i class="ti ti-logout" style="font-size:13px"></i>
+        <span id="topUserEmail" style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
+      </button>
+    </div>
     <div class="brand">
       <i class="ti ti-chart-candle" style="font-size:26px"></i>
       SKVK <span class="accent">Margin Availability</span>
-      <span class="vbadge">v4.10</span>
+      <span class="vbadge">v5.0</span>
     </div>
     <div class="topbar-right">
       <span class="topbar-date" id="topDate"></span>
@@ -381,7 +457,7 @@ select.cell-input{cursor:pointer; appearance:none; padding:0; height:28px;}
       </div>
     </div>
 
-    <!-- Main Table Layout -->
+    <!-- Main Table -->
     <div class="tbl-wrap">
       <table>
         <colgroup>
@@ -551,6 +627,24 @@ select.cell-input{cursor:pointer; appearance:none; padding:0; height:28px;}
       <button class="btn navy" onclick="openModal()"><i class="ti ti-plus"></i> Add Account</button>
     </div>
     <div class="acc-list" id="accList"></div>
+
+    <!-- Access Control Section -->
+    <div class="access-section" id="accessSection" style="display:none">
+      <h3><i class="ti ti-shield-lock" style="color:var(--navy)"></i> Access Control</h3>
+      <p style="font-size:12px;color:var(--text2);margin-bottom:14px">
+        Manage which Google accounts can access this app. Only you (permanent admin) can add or remove users.
+      </p>
+      <div id="emailList" style="margin-bottom:14px"></div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input type="email" id="newEmailInput" placeholder="new.user@gmail.com"
+          style="flex:1;height:36px;padding:0 10px;border-radius:var(--r);border:1px solid var(--border2);
+                 background:var(--bg);color:var(--text);font-size:13px;font-family:inherit">
+        <button class="btn navy" onclick="addAllowedEmail()">
+          <i class="ti ti-user-plus"></i> Add Email
+        </button>
+      </div>
+    </div>
+
     <div class="danger-section">
       <h3><i class="ti ti-trash"></i> Delete Old Data</h3>
       <p style="font-size:12px;color:var(--text2);margin-bottom:12px">
@@ -581,7 +675,7 @@ select.cell-input{cursor:pointer; appearance:none; padding:0; height:28px;}
   </div>
 </div>
 
-<!-- Add/Edit Account Modal View Frame -->
+<!-- Add/Edit Account Modal -->
 <div class="modal-bg" id="modalBg">
   <div class="modal">
     <h3 id="modalTitle">Add Account</h3>
@@ -634,7 +728,7 @@ select.cell-input{cursor:pointer; appearance:none; padding:0; height:28px;}
   </div>
 </div>
 
-<!-- History Detail Popup Modal View Frame -->
+<!-- History Detail Modal -->
 <div class="modal-bg" id="detailModalBg">
   <div class="modal wide">
     <h3 id="detailModalTitle">Entry Detail</h3>
@@ -648,11 +742,10 @@ select.cell-input{cursor:pointer; appearance:none; padding:0; height:28px;}
 <div class="toast" id="toast"></div>
 
 <script>
-// ══ GENERAL LAYOUT UTILITIES (COMPILATION HOISTED) ══
+// ══ GENERAL LAYOUT UTILITIES ══
 function esc(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
-
 function inr2(n) {
   if(n===null||n===undefined||isNaN(n)||n==='') return '—';
   var neg=n<0; n=Math.abs(n);
@@ -663,19 +756,16 @@ function inr2(n) {
   else r=s;
   return (neg?'-':'')+'₹'+r+'.'+dec;
 }
-
 function fmtDate(d) {
   if(!d) return '—';
   return new Date(d+'T00:00:00').toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
 }
-
 function toast(msg,isErr) {
   var el=document.getElementById('toast');
   el.textContent=msg;el.className='toast '+(isErr?'err':'ok');
   el.style.display='block';clearTimeout(el._t);
   el._t=setTimeout(()=>el.style.display='none',3200);
 }
-
 function shortFmt(n) {
   if(!n||isNaN(n)) return '—';
   n=Math.abs(parseFloat(n));
@@ -683,7 +773,6 @@ function shortFmt(n) {
   if(n>=100000)   return '₹'+(n/100000).toFixed(2)+' L';
   return '₹'+n.toFixed(2);
 }
-
 function fmtCrL(n){
   if(!n||isNaN(n)) return '—';
   n=Math.abs(parseFloat(n));
@@ -691,15 +780,12 @@ function fmtCrL(n){
   if(n>=100000)   return '₹ '+(n/100000).toFixed(2)+' L';
   return '₹ '+n.toFixed(0);
 }
-
 function toLakh(n) { return (n/100000); }
 function fmtLakh(n) { return toLakh(n).toFixed(2)+'L'; }
-
 function parseRaw(str) {
   if(!str) return 0;
   return parseFloat(str.replace(/,/g,''))||0;
 }
-
 function fmtInput(n) {
   if(!n||isNaN(n)) return '';
   n = Math.abs(parseFloat(n));
@@ -710,7 +796,6 @@ function fmtInput(n) {
   else r=s;
   return r+'.'+dec;
 }
-
 function fmtDateShort(d) {
   if(!d) return '—';
   var dt = new Date(d+'T00:00:00');
@@ -724,16 +809,19 @@ var accounts         = {};
 var latestPerAccount = {};
 var editId           = null;
 var histData         = [];
+var allHistData      = [];
+var accHistData      = [];
 var saveTimers       = {};
 var focusCache       = {};
 var chartInstances   = {};
-var PIE_COLORS       = [
+var currentUserEmail = null;
+var PIE_COLORS = [
   '#1565c0','#0d7a3e','#d97706','#6d28d9','#0d7377',
   '#c0392b','#84cc16','#0891b2','#7c3aed','#b45309',
   '#059669','#dc2626','#2563eb','#16a34a','#ca8a04'
 ];
 
-// ══ CRITICAL REPAIRED FIREBASE CONFIGURATION OBJECT ══
+// ══ FIREBASE CONFIG ══
 var FIREBASE_CONFIG = {
   apiKey:            "AIzaSyBLNXE6A-EJo1WS5cFJZM3B2YxqcJMJI00",
   authDomain:        "skvk-margin-calculator.firebaseapp.com",
@@ -744,7 +832,117 @@ var FIREBASE_CONFIG = {
   appId:             "1:341103062702:web:fadf6ca98e4b1eb2f2473f"
 };
 
-// ══ WORKSPACE APPLICATION CORE CONTROLLERS ══
+// ══ AUTH CONSTANTS ══
+var PERMANENT_ADMIN = 'sivakumar.profit@gmail.com';
+
+// ══ GOOGLE SIGN-IN ══
+function signInWithGoogle() {
+  var btn     = document.getElementById('googleSignInBtn');
+  var spinner = document.getElementById('loginSpinner');
+  var errEl   = document.getElementById('loginError');
+  btn.style.display     = 'none';
+  spinner.style.display = 'block';
+  errEl.style.display   = 'none';
+
+  var provider = new firebase.auth.GoogleAuthProvider();
+  provider.setCustomParameters({ prompt: 'select_account' });
+
+  firebase.auth().signInWithPopup(provider)
+    .then(function(result){
+      // onAuthStateChanged handles grant/deny
+    })
+    .catch(function(err){
+      btn.style.display     = 'flex';
+      spinner.style.display = 'none';
+      if(err.code !== 'auth/popup-closed-by-user'){
+        errEl.textContent = '⚠️ Sign-in failed: ' + err.message;
+        errEl.style.display = 'block';
+      }
+    });
+}
+
+function signOut() {
+  if(!confirm('Sign out of SKVK Margin Availability?')) return;
+  firebase.auth().signOut().then(function(){ location.reload(); });
+}
+
+function grantAccess(email) {
+  currentUserEmail = email;
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  var el = document.getElementById('topUserEmail');
+  if(el) el.textContent = email;
+  startApp();
+}
+
+// ══ ALLOWED EMAILS — ADD / REMOVE (admin only) ══
+function loadAllowedEmails() {
+  if(currentUserEmail !== PERMANENT_ADMIN) return;
+  db.ref('allowed_emails').once('value').then(function(snap){
+    renderEmailList(snap.val()||{});
+  });
+}
+
+function renderEmailList(data) {
+  var el = document.getElementById('emailList');
+  if(!el) return;
+  var rows = `<div class="email-row admin">
+    <div class="email-row-left">
+      <i class="ti ti-shield-check" style="color:var(--blue)"></i>
+      <div>
+        <div class="email-addr">${PERMANENT_ADMIN}</div>
+        <div class="email-role">Permanent Admin — cannot be removed</div>
+      </div>
+    </div>
+  </div>`;
+  var entries = Object.entries(data);
+  if(!entries.length){
+    rows += '<div style="font-size:12px;color:var(--text2);padding:8px 0">No additional emails yet.</div>';
+  } else {
+    entries.forEach(function(entry){
+      var key = entry[0], email = entry[1];
+      if(email === PERMANENT_ADMIN) return;
+      rows += `<div class="email-row">
+        <div class="email-row-left">
+          <i class="ti ti-user-check" style="color:var(--green)"></i>
+          <div class="email-addr">${esc(email)}</div>
+        </div>
+        <button class="btn sm danger" onclick="removeAllowedEmail('${key}','${esc(email)}')">
+          <i class="ti ti-trash"></i> Remove
+        </button>
+      </div>`;
+    });
+  }
+  el.innerHTML = rows;
+}
+
+function addAllowedEmail() {
+  var inp   = document.getElementById('newEmailInput');
+  var email = (inp.value||'').trim().toLowerCase();
+  if(!email){ toast('Enter an email address', true); return; }
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ toast('Invalid email address', true); return; }
+  if(email === PERMANENT_ADMIN){ toast('Already permanent admin', true); return; }
+  db.ref('allowed_emails').once('value').then(function(snap){
+    var data = snap.val()||{};
+    var exists = Object.values(data).some(function(e){ return e===email; });
+    if(exists){ toast(email+' is already in the list', true); return; }
+    db.ref('allowed_emails').push(email).then(function(){
+      inp.value = '';
+      loadAllowedEmails();
+      toast('Added '+email+' ✓');
+    }).catch(function(e){ toast('Error: '+e.message, true); });
+  });
+}
+
+function removeAllowedEmail(key, email) {
+  if(!confirm('Remove '+email+' from allowed list?')) return;
+  db.ref('allowed_emails/'+key).remove().then(function(){
+    loadAllowedEmails();
+    toast('Removed '+email);
+  }).catch(function(e){ toast('Error: '+e.message, true); });
+}
+
+// ══ TABS ══
 function goTab(t) {
   ['entry','slicing','history','settings'].forEach(p=>{
     var el=document.getElementById('panel-'+p);
@@ -753,10 +951,11 @@ function goTab(t) {
     if(tb) tb.classList.toggle('active',p===t);
   });
   if(t==='history') loadHistory();
-  if(t==='settings') renderAccList();
+  if(t==='settings'){ renderAccList(); loadAllowedEmails(); }
   if(t==='slicing') renderSlicing();
 }
 
+// ══ LOAD LATEST ══
 function loadLatest() {
   db.ref('margin/accounts_latest').on('value', snap=>{
     var fresh = snap.val()||{};
@@ -794,6 +993,7 @@ function loadLatest() {
   });
 }
 
+// ══ RENDER TABLE ══
 function renderTable() {
   var tb   = document.getElementById('entryBody');
   var list = Object.entries(accounts);
@@ -824,11 +1024,11 @@ function renderTable() {
     var ceDisp   = ce>0   ? fmtInput(ce)   : '';
     var clDisp   = cl>0   ? fmtInput(cl)   : '';
 
-    var strategy  = e.strategy||'';
-    var deployPct = e.deployPct!==undefined ? parseFloat(e.deployPct) : '';
-    var sysAlloc  = e.sysAlloc||'';
-    var capitalPerLot = e.capitalPerLot!==undefined && e.capitalPerLot>0 ? parseFloat(e.capitalPerLot) : '';
-    var noLots    = e.noLots!==undefined && e.noLots>0 ? parseFloat(e.noLots) : '';
+    var strategy     = e.strategy||'';
+    var deployPct    = e.deployPct!==undefined ? parseFloat(e.deployPct) : '';
+    var sysAlloc     = e.sysAlloc||'';
+    var capitalPerLot= e.capitalPerLot!==undefined && e.capitalPerLot>0 ? parseFloat(e.capitalPerLot) : '';
+    var noLots       = e.noLots!==undefined && e.noLots>0 ? parseFloat(e.noLots) : '';
 
     var sysClass = 'sys-none';
     if(sysAlloc==='Locked') sysClass = 'sys-locked';
@@ -838,7 +1038,7 @@ function renderTable() {
     var accBadge = isBank
       ? `<span style="font-size:9px;background:#0d7a3e;color:#fff;padding:1px 5px;border-radius:3px;margin-left:4px">BANK</span>`
       : '';
-      
+
     var sysIcon = '';
     if(sysAlloc==='Locked') sysIcon = '<i class="ti ti-lock" style="font-size:18px;margin-left:4px;color:#14532d;vertical-align:middle"></i>';
     else if(sysAlloc==='Random') sysIcon = '<i class="ti ti-arrows-shuffle" style="font-size:18px;margin-left:4px;color:#c2410c;vertical-align:middle"></i>';
@@ -961,14 +1161,9 @@ function renderTable() {
     <td class="r">${inr2(tots.ce)}</td>
     <td class="r">${inr2(tots.cl)}</td>
     <td class="r" style="color:#64b5f6;font-size:13px">${inr2(tots.am)}</td>
-    <td class="c"></td>
-    <td class="c"></td>
-    <td class="c"></td>
-    <td class="c"></td>
-    <td class="c"></td>
-    <td class="c"></td>
-    <td class="c"></td>
-    <td class="c"></td>
+    <td class="c"></td><td class="c"></td><td class="c"></td>
+    <td class="c"></td><td class="c"></td><td class="c"></td>
+    <td class="c"></td><td class="c"></td>
   </tr>`;
 
   tb.innerHTML = rows;
@@ -986,17 +1181,13 @@ function onFocusInput(el, id, field){
 function onBlurInput(el, id, field){
   var raw = parseRaw(el.value);
   var rawStr = raw.toFixed(2);
-  
   if(!latestPerAccount[id]) latestPerAccount[id]={};
   latestPerAccount[id][field] = raw;
   el.value = raw>0 ? fmtInput(raw) : '';
-  
   recalcRow(id);
   refreshTotalRow();
   updateSummary();
-  
   if(focusCache[field+'_'+id] === rawStr) return;
-  
   clearTimeout(saveTimers[id]);
   saveTimers[id] = setTimeout(()=>saveRow(id), 600);
 }
@@ -1010,11 +1201,9 @@ function renderCashLakh(id, cash){
   var cl = parseFloat(e.collateralLiquid)||0;
   var am = cash+ce+cl;
   var pctOfTotal = am>0 ? (cash/am*100).toFixed(1)+'%' : '';
-  
   if(cash<=0) return '<span style="color:var(--text3)">—</span>';
-  
   if(minCash>0 && cash<minCash){
-    return `<div style="text-align:center; display:flex; flex-direction:column; gap:1px">
+    return `<div style="text-align:center;display:flex;flex-direction:column;gap:1px">
       <span style="color:var(--red);font-weight:700;font-size:14px">
         <i class="ti ti-alert-triangle" style="font-size:11px"></i> ${lakhStr}
       </span>
@@ -1022,7 +1211,7 @@ function renderCashLakh(id, cash){
       <div style="font-size:9px;color:var(--red);margin-top:1px;font-weight:600">Min: ${fmtLakh(minCash)}</div>
     </div>`;
   }
-  return `<div style="text-align:center; display:flex; flex-direction:column; gap:1px">
+  return `<div style="text-align:center;display:flex;flex-direction:column;gap:1px">
     <span style="color:#84cc16;font-weight:700;font-size:14px">${lakhStr}</span>
     <span style="font-size:11px;font-weight:600;color:var(--text2);font-variant-numeric:tabular-nums">${pctOfTotal}</span>
   </div>`;
@@ -1030,9 +1219,8 @@ function renderCashLakh(id, cash){
 
 function renderCashPct(cashComp, mtmPct, liqPct){
   var isWarn = cashComp < 50;
-  var mtmW  = cashComp>0 ? (mtmPct/cashComp*100)  : 0;
-  var liqW  = cashComp>0 ? (liqPct/cashComp*100)   : 0;
-  
+  var mtmW = cashComp>0 ? (mtmPct/cashComp*100) : 0;
+  var liqW = cashComp>0 ? (liqPct/cashComp*100) : 0;
   return `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;width:100%">
     <span style="font-size:12px;font-weight:700;color:#0d7a3e">${cashComp.toFixed(2)}%</span>
     <div style="width:100%;height:6px;border-radius:3px;overflow:hidden;display:flex;min-width:60px">
@@ -1096,10 +1284,8 @@ async function saveRow(id){
   try{
     await db.ref('margin/accounts_latest/'+id).update(payload);
     latestPerAccount[id] = Object.assign({}, latestPerAccount[id], payload);
-
     var dateKey = date.replace(/-/g,'');
     await db.ref('margin/daily/'+dateKey+'/'+id).update(payload);
-
     var tots = calcTotals();
     await db.ref('margin/daily/'+dateKey+'/_totals').update({
       savedAt: now,
@@ -1144,13 +1330,11 @@ function recalcRow(id){
     if(nameEl){
       var a=accounts[id]||{};
       var showWarn = isWarn || (parseFloat(a.minCash)>0 && cash<parseFloat(a.minCash));
-      var sysAlloc = e.sysAlloc || '';
-      var sysIcon = '';
-      if(sysAlloc==='Locked') sysIcon = '<i class="ti ti-lock" style="font-size:18px;margin-left:4px;color:#14532d;vertical-align:middle"></i>';
-      else if(sysAlloc==='Random') sysIcon = '<i class="ti ti-arrows-shuffle" style="font-size:18px;margin-left:4px;color:#c2410c;vertical-align:middle"></i>';
-      else if(sysAlloc==='Trial Run') sysIcon = '<i class="ti ti-flask" style="font-size:18px;margin-left:4px;color:#c2410c;vertical-align:middle"></i>';
-      var accBadge = a.accType==='bank' ? `<span style="font-size:9px;background:#0d7a3e;color:#fff;padding:1px 5px;border-radius:3px;margin-left:4px">BANK</span>` : '';
-      
+      var sysAlloc = e.sysAlloc||'';
+      var sysIcon = sysAlloc==='Locked'?'<i class="ti ti-lock" style="font-size:18px;margin-left:4px;color:#14532d;vertical-align:middle"></i>'
+        :sysAlloc==='Random'?'<i class="ti ti-arrows-shuffle" style="font-size:18px;margin-left:4px;color:#c2410c;vertical-align:middle"></i>'
+        :sysAlloc==='Trial Run'?'<i class="ti ti-flask" style="font-size:18px;margin-left:4px;color:#c2410c;vertical-align:middle"></i>':'';
+      var accBadge = a.accType==='bank'?`<span style="font-size:9px;background:#0d7a3e;color:#fff;padding:1px 5px;border-radius:3px;margin-left:4px">BANK</span>`:'';
       nameEl.innerHTML=(showWarn?'<i class="ti ti-alert-triangle warn-icon"></i> ':'')+
         esc(a.broker||'')+' — '+esc(a.nickname||'')+accBadge+sysIcon;
     }
@@ -1188,7 +1372,7 @@ function updateSummary(){
   document.getElementById('sAMsub').textContent=n+' account'+(n!==1?'s':'')+' configured';
 }
 
-// ══ HISTORICAL LEDGER SYSTEMS (UNIVERSALLY LATEST FIRST) ══
+// ══ HISTORY ══
 function populateHistAccSelect(){
   var sel = document.getElementById('histAccSelect');
   if(!sel) return;
@@ -1209,8 +1393,6 @@ async function loadHistory(){
   try{
     var snap = await db.ref('margin/daily').orderByKey().once('value');
     var raw  = snap.val()||{};
-    
-    // Sort universally Descending (Latest Date First)
     allHistData = Object.entries(raw).map(([dateKey,dayData])=>{
       var totals = dayData._totals||{};
       var entries={};
@@ -1228,12 +1410,11 @@ async function loadHistory(){
       return{dateKey,dateStr,entries,totals};
     }).sort((a,b)=>b.dateKey.localeCompare(a.dateKey));
 
-    var years=[...new Set(allHistData.map(r=>r.dateStr.slice(0,4)))]; // Inherits descending
+    var years=[...new Set(allHistData.map(r=>r.dateStr.slice(0,4)))];
     ['histYearSelectTotal','histYearSelectAcc'].forEach(selId=>{
       var s=document.getElementById(selId); if(!s) return;
       s.innerHTML=years.map(y=>`<option value="${y}">${y}</option>`).join('');
     });
-
     renderTotalTable();
     redrawTotalChart();
   }catch(e){
@@ -1244,13 +1425,13 @@ async function loadHistory(){
 
 function renderTotalTable(){
   var tb = document.getElementById('histTotalBody');
-  var rows = [...allHistData]; // Already latest-first
+  var rows = [...allHistData];
   if(!rows.length){
     tb.innerHTML='<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text2)">No history yet.</td></tr>';
     return;
   }
   tb.innerHTML = rows.map((r,i)=>{
-    var prev  = rows[i+1]; // prev is physically the older date in a descending array
+    var prev  = rows[i+1];
     var delta = prev&&r.totals.available&&prev.totals.available ? r.totals.available-prev.totals.available : null;
     var dTxt  = delta!==null?`<span class="delta ${delta>=0?'pos':'neg'}">${delta>=0?'+':''}${shortFmt(delta)}</span>`:'—';
     var dateDisp = new Date(r.dateStr+'T00:00:00').toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
@@ -1272,34 +1453,22 @@ function redrawTotalChart(){
 }
 
 async function loadAccHistory(){
-  var accId = document.getElementById('histAccSelect')?.value;
+  var accId     = document.getElementById('histAccSelect')?.value;
   var tableWrap = document.getElementById('histAccTableWrap');
   var chartWrap = document.getElementById('histAccChartWrap');
   var emptyEl   = document.getElementById('histAccEmpty');
   var tb        = document.getElementById('histBody');
-
   if(!accId){
-    tableWrap.style.display='none';
-    chartWrap.style.display='none';
-    emptyEl.style.display='block';
-    return;
+    tableWrap.style.display='none'; chartWrap.style.display='none'; emptyEl.style.display='block'; return;
   }
-
-  emptyEl.style.display='none';
-  tableWrap.style.display='block';
-  chartWrap.style.display='block';
-
+  emptyEl.style.display='none'; tableWrap.style.display='block'; chartWrap.style.display='block';
   accHistData = allHistData.map(r=>{
-    var e = r.entries[accId];
-    if(!e) return null;
+    var e = r.entries[accId]; if(!e) return null;
     var cash=parseFloat(e.cash)||0, ce=parseFloat(e.collateralEquity)||0, cl=parseFloat(e.collateralLiquid)||0;
     return{dateStr:r.dateStr, dateKey:r.dateKey, cash, ce, cl, am:cash+ce+cl};
-  }).filter(Boolean); // Inherits latest-first sort
-
+  }).filter(Boolean);
   var a = accounts[accId]||{};
-  document.getElementById('histAccChartTitle').textContent =
-    (a.broker||'')+ ' — '+(a.nickname||'') + ' — Year View';
-
+  document.getElementById('histAccChartTitle').textContent = (a.broker||'')+ ' — '+(a.nickname||'') + ' — Year View';
   var rowsDesc = [...accHistData];
   tb.innerHTML = rowsDesc.map((r,i)=>{
     var prev  = rowsDesc[i+1];
@@ -1315,33 +1484,33 @@ async function loadAccHistory(){
       <td class="r">${dTxt}</td>
     </tr>`;
   }).join('');
-
   redrawAccChart();
 }
 
+function redrawAccChart(){
+  var year = document.getElementById('histYearSelectAcc')?.value || new Date().getFullYear().toString();
+  var rows = accHistData.filter(r=>r.dateStr.startsWith(year));
+  drawLineChart('histAccChart', rows.map(r=>({dateStr:r.dateStr, am:r.am})), '#d97706');
+}
+
 function drawLineChart(canvasId, rows, color){
-  var canvas = document.getElementById(canvasId);
-  if(!canvas) return;
+  var canvas = document.getElementById(canvasId); if(!canvas) return;
   var ctx = canvas.getContext('2d');
   canvas.width  = canvas.parentElement.clientWidth - 10;
   canvas.height = 220;
   var W=canvas.width, H=canvas.height;
   var padL=70, padR=20, padT=20, padB=45;
   ctx.clearRect(0,0,W,H);
-
   if(!rows.length){
     ctx.fillStyle='#9aa0ad'; ctx.font='12px sans-serif';
-    ctx.textAlign='center'; ctx.fillText('No data for this year',W/2,H/2);
-    return;
+    ctx.textAlign='center'; ctx.fillText('No data for this year',W/2,H/2); return;
   }
-
   var values = rows.map(r=>r.am);
   var minV = Math.min(...values)*0.97;
   var maxV = Math.max(...values)*1.03;
   var n    = values.length;
   var textColor = getComputedStyle(document.documentElement).getPropertyValue('--text2').trim()||'#5a6070';
   var borderColor = getComputedStyle(document.documentElement).getPropertyValue('--border').trim()||'#e2e5ea';
-
   ctx.strokeStyle=borderColor; ctx.lineWidth=1;
   for(var g=0;g<=4;g++){
     var y=padT+(H-padT-padB)*g/4;
@@ -1349,47 +1518,26 @@ function drawLineChart(canvasId, rows, color){
     ctx.fillStyle=textColor; ctx.font='10px sans-serif'; ctx.textAlign='right';
     ctx.fillText(shortFmt(maxV-(maxV-minV)*g/4), padL-4, y+4);
   }
-
   ctx.fillStyle=textColor; ctx.font='10px sans-serif'; ctx.textAlign='center';
   var step = Math.max(1, Math.floor(n/10));
-  rows.forEach((r,i)=>{
-    if(i%step!==0 && i!==n-1) return;
-    var x=padL+(W-padL-padR)*i/(n-1||1);
-    ctx.fillText(fmtDateShort(r.dateStr), x, H-padB+16);
-  });
-
+  rows.forEach((r,i)=>{ if(i%step!==0 && i!==n-1) return; var x=padL+(W-padL-padR)*i/(n-1||1); ctx.fillText(fmtDateShort(r.dateStr), x, H-padB+16); });
   ctx.beginPath(); ctx.strokeStyle=color; ctx.lineWidth=2.5;
-  values.forEach((v,i)=>{
-    var x=padL+(W-padL-padR)*i/(n-1||1);
-    var y=padT+(H-padT-padB)*(1-(v-minV)/(maxV-minV||1));
-    i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
-  });
+  values.forEach((v,i)=>{ var x=padL+(W-padL-padR)*i/(n-1||1); var y=padT+(H-padT-padB)*(1-(v-minV)/(maxV-minV||1)); i===0?ctx.moveTo(x,y):ctx.lineTo(x,y); });
   ctx.stroke();
-
   ctx.beginPath();
-  values.forEach((v,i)=>{
-    var x=padL+(W-padL-padR)*i/(n-1||1);
-    var y=padT+(H-padT-padB)*(1-(v-minV)/(maxV-minV||1));
-    i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
-  });
-  ctx.lineTo(padL+(W-padL-padR)*(n-1)/(n-1||1),H-padB);
-  ctx.lineTo(padL,H-padB); ctx.closePath();
-  ctx.fillStyle=color.replace(')',',0.08)').replace('rgb','rgba')||'rgba(21,101,192,0.08)';
-  ctx.fill();
-
-  values.forEach((v,i)=>{
-    var x=padL+(W-padL-padR)*i/(n-1||1);
-    var y=padT+(H-padT-padB)*(1-(v-minV)/(maxV-minV||1));
-    ctx.beginPath(); ctx.arc(x,y,3.5,0,2*Math.PI);
-    ctx.fillStyle=color; ctx.fill();
-    ctx.strokeStyle='#fff'; ctx.lineWidth=1.5; ctx.stroke();
-  });
+  values.forEach((v,i)=>{ var x=padL+(W-padL-padR)*i/(n-1||1); var y=padT+(H-padT-padB)*(1-(v-minV)/(maxV-minV||1)); i===0?ctx.moveTo(x,y):ctx.lineTo(x,y); });
+  ctx.lineTo(padL+(W-padL-padR)*(n-1)/(n-1||1),H-padB); ctx.lineTo(padL,H-padB); ctx.closePath();
+  ctx.fillStyle=color.replace(')',',0.08)').replace('rgb','rgba')||'rgba(21,101,192,0.08)'; ctx.fill();
+  values.forEach((v,i)=>{ var x=padL+(W-padL-padR)*i/(n-1||1); var y=padT+(H-padT-padB)*(1-(v-minV)/(maxV-minV||1)); ctx.beginPath(); ctx.arc(x,y,3.5,0,2*Math.PI); ctx.fillStyle=color; ctx.fill(); ctx.strokeStyle='#fff'; ctx.lineWidth=1.5; ctx.stroke(); });
 }
 
-// ══ ACCOUNT PROPERTIES SYSTEM ══
+// ══ SETTINGS ══
 function renderAccList(){
   var el=document.getElementById('accList');
   var list=Object.entries(accounts);
+  // Show access section only for permanent admin
+  var sec = document.getElementById('accessSection');
+  if(sec) sec.style.display = currentUserEmail===PERMANENT_ADMIN ? 'block' : 'none';
   if(!list.length){
     el.innerHTML=`<div class="empty"><i class="ti ti-building-bank"></i>
       <h3>No accounts yet</h3><p>Add broker accounts to start tracking.</p></div>`;
@@ -1418,28 +1566,21 @@ function renderAccList(){
 }
 
 async function onExpandSave(id){
-  var strategy  = document.getElementById('f_strategy_'+id)?.value.trim()||'';
+  var strategy = document.getElementById('f_strategy_'+id)?.value.trim()||'';
   var e = latestPerAccount[id]||{};
-  var deployPct = parseFloat(e.deployPct)||0;
-  var sysAlloc  = e.sysAlloc||'';
-
   if(!latestPerAccount[id]) latestPerAccount[id]={};
   latestPerAccount[id].strategy = strategy;
-
+  var sysAlloc = e.sysAlloc||'';
   var sysClass = sysAlloc==='Locked'?'sys-locked':sysAlloc==='Random'?'sys-random':sysAlloc==='Trial Run'?'sys-trial':'sys-none';
   var row = document.getElementById('row_'+id);
   if(row) row.className = sysClass;
-
   var accCell = document.getElementById('acccell_'+id);
   if(accCell){
     var a = accounts[id]||{};
     var nameEl = accCell.querySelector('.acc-name');
     if(nameEl){
-      var cash = parseFloat(e.cash)||0;
-      var ce   = parseFloat(e.collateralEquity)||0;
-      var cl   = parseFloat(e.collateralLiquid)||0;
-      var am   = cash+ce+cl;
-      var cashComp = am>0?((cash+cl)/am*100):0;
+      var cash = parseFloat(e.cash)||0, ce = parseFloat(e.collateralEquity)||0, cl = parseFloat(e.collateralLiquid)||0;
+      var am = cash+ce+cl, cashComp = am>0?((cash+cl)/am*100):0;
       var anyWarn = (parseFloat(a.minCash)>0&&cash<parseFloat(a.minCash))||(am>0&&cashComp<50);
       var accBadge = a.accType==='bank'?`<span style="font-size:9px;background:#0d7a3e;color:#fff;padding:1px 5px;border-radius:3px;margin-left:4px">BANK</span>`:'';
       var sysIcon = sysAlloc==='Locked'?'<i class="ti ti-lock" style="font-size:18px;margin-left:4px;color:#14532d;vertical-align:middle"></i>'
@@ -1448,7 +1589,6 @@ async function onExpandSave(id){
       nameEl.innerHTML=(anyWarn?'<i class="ti ti-alert-triangle warn-icon"></i> ':'')+esc(a.broker||'')+' — '+esc(a.nickname||'')+accBadge+sysIcon;
     }
   }
-
   try{
     await db.ref('margin/accounts_latest/'+id).update({strategy, savedAt: Date.now()});
   }catch(err){ toast('Save error: '+err.message, true); }
@@ -1471,10 +1611,7 @@ function renderSysAllocBtn(id, sysAlloc){
 }
 
 function toggleSysPopup(id){
-  // Close all other popups first
-  document.querySelectorAll('.sysalloc-popup.open').forEach(p=>{
-    if(p.id!=='sapop_'+id) p.classList.remove('open');
-  });
+  document.querySelectorAll('.sysalloc-popup.open').forEach(p=>{ if(p.id!=='sapop_'+id) p.classList.remove('open'); });
   var pop = document.getElementById('sapop_'+id);
   if(pop) pop.classList.toggle('open');
 }
@@ -1482,35 +1619,23 @@ function toggleSysPopup(id){
 async function selectSysAlloc(id, val){
   var pop = document.getElementById('sapop_'+id);
   if(pop) pop.classList.remove('open');
-
   if(!latestPerAccount[id]) latestPerAccount[id]={};
   latestPerAccount[id].sysAlloc = val;
-
-  // Update button letter & class
   var btn = document.getElementById('sabtn_'+id);
   if(btn){
     btn.textContent = val==='Locked'?'L':val==='Random'?'R':val==='Trial Run'?'T':'—';
     btn.className = 'sysalloc-btn'+(val==='Locked'?' sa-locked':val==='Random'?' sa-random':val==='Trial Run'?' sa-trial':'');
   }
-
-  // Update row highlight class
   var row = document.getElementById('row_'+id);
-  if(row){
-    row.className = val==='Locked'?'sys-locked':val==='Random'?'sys-random':val==='Trial Run'?'sys-trial':'sys-none';
-  }
-
-  // Update icon in account name cell
+  if(row) row.className = val==='Locked'?'sys-locked':val==='Random'?'sys-random':val==='Trial Run'?'sys-trial':'sys-none';
   var accCell = document.getElementById('acccell_'+id);
   if(accCell){
     var nameEl = accCell.querySelector('.acc-name');
     if(nameEl){
       var a = accounts[id]||{};
       var e = latestPerAccount[id]||{};
-      var cash = parseFloat(e.cash)||0;
-      var ce   = parseFloat(e.collateralEquity)||0;
-      var cl   = parseFloat(e.collateralLiquid)||0;
-      var am   = cash+ce+cl;
-      var cashComp = am>0?((cash+cl)/am*100):0;
+      var cash = parseFloat(e.cash)||0, ce = parseFloat(e.collateralEquity)||0, cl = parseFloat(e.collateralLiquid)||0;
+      var am = cash+ce+cl, cashComp = am>0?((cash+cl)/am*100):0;
       var anyWarn = (parseFloat(a.minCash)>0&&cash<parseFloat(a.minCash))||(am>0&&cashComp<50);
       var accBadge = a.accType==='bank'?`<span style="font-size:9px;background:#0d7a3e;color:#fff;padding:1px 5px;border-radius:3px;margin-left:4px">BANK</span>`:'';
       var sysIcon = val==='Locked'?'<i class="ti ti-lock" style="font-size:18px;margin-left:4px;color:#14532d;vertical-align:middle"></i>'
@@ -1519,14 +1644,12 @@ async function selectSysAlloc(id, val){
       nameEl.innerHTML=(anyWarn?'<i class="ti ti-alert-triangle warn-icon"></i> ':'')+esc(a.broker||'')+' — '+esc(a.nickname||'')+accBadge+sysIcon;
     }
   }
-
   try{
     await db.ref('margin/accounts_latest/'+id).update({sysAlloc: val, savedAt: Date.now()});
     toast('System allocation saved ✓');
   }catch(err){ toast('Save error: '+err.message, true); }
 }
 
-// Close popups when clicking outside
 document.addEventListener('click', function(e){
   if(!e.target.closest('.sysalloc-btn') && !e.target.closest('.sysalloc-popup')){
     document.querySelectorAll('.sysalloc-popup.open').forEach(p=>p.classList.remove('open'));
@@ -1538,25 +1661,18 @@ function cteOpen(type, id){
   var disp = document.getElementById('cte_disp_'+type+'_'+id);
   var inp  = document.getElementById('cte_inp_'+type+'_'+id);
   if(!disp||!inp) return;
-  disp.classList.add('hidden');
-  inp.classList.add('active');
-  inp.focus();
-  inp.select();
+  disp.classList.add('hidden'); inp.classList.add('active'); inp.focus(); inp.select();
 }
 
 async function cteClose(type, id){
   var disp = document.getElementById('cte_disp_'+type+'_'+id);
   var inp  = document.getElementById('cte_inp_'+type+'_'+id);
   if(!disp||!inp) return;
-
   var val = parseFloat(inp.value);
   if(isNaN(val)||val<0) val=0;
-
   if(!latestPerAccount[id]) latestPerAccount[id]={};
-
   var dispText = '—';
   var updateObj = {savedAt: Date.now()};
-
   if(type==='caplot'){
     val = Math.round(val*100)/100;
     latestPerAccount[id].capitalPerLot = val;
@@ -1572,16 +1688,12 @@ async function cteClose(type, id){
     latestPerAccount[id].deployPct = val;
     dispText = val>0 ? val+'%' : '—';
     updateObj.deployPct = val;
-    // Update row highlight
     var sysAlloc = latestPerAccount[id].sysAlloc||'';
     var row = document.getElementById('row_'+id);
     if(row) row.className = sysAlloc==='Locked'?'sys-locked':sysAlloc==='Random'?'sys-random':sysAlloc==='Trial Run'?'sys-trial':'sys-none';
   }
-
   disp.textContent = dispText;
-  inp.classList.remove('active');
-  disp.classList.remove('hidden');
-
+  inp.classList.remove('active'); disp.classList.remove('hidden');
   try{
     await db.ref('margin/accounts_latest/'+id).update(updateObj);
   }catch(err){ toast('Save error: '+err.message, true); }
@@ -1589,20 +1701,13 @@ async function cteClose(type, id){
 
 function onBrokerChange(sel){
   var otherInput = document.getElementById('m_broker_other');
-  if(sel.value==='__other__'){
-    otherInput.style.display='block';
-    otherInput.focus();
-  } else {
-    otherInput.style.display='none';
-    otherInput.value='';
-  }
+  if(sel.value==='__other__'){ otherInput.style.display='block'; otherInput.focus(); }
+  else { otherInput.style.display='none'; otherInput.value=''; }
 }
 
 function toggleAccType(){
   var t=document.getElementById('m_acctype').value;
-  document.querySelectorAll('.broker-only').forEach(el=>{
-    el.style.display=t==='broker'?'flex':'none';
-  });
+  document.querySelectorAll('.broker-only').forEach(el=>{ el.style.display=t==='broker'?'flex':'none'; });
 }
 
 function addCombination(sysName='', index='', trade='', pct=''){
@@ -1643,8 +1748,7 @@ function addCombination(sysName='', index='', trade='', pct=''){
 function updateComboTotal(){
   var pcts = Array.from(document.querySelectorAll('.combo-pct')).map(i=>parseFloat(i.value)||0);
   var total = pcts.reduce((s,v)=>s+v,0);
-  var el = document.getElementById('m_combo_total');
-  if(!el) return;
+  var el = document.getElementById('m_combo_total'); if(!el) return;
   el.textContent = 'Total: '+total+'%';
   el.style.color = total===100 ? 'var(--green)' : total>100 ? 'var(--red)' : 'var(--amber)';
 }
@@ -1666,9 +1770,9 @@ function openModal(id){
   editId=id||null;
   document.getElementById('modalTitle').textContent=id?'Edit Account':'Add Account';
   var a=id&&accounts[id]?accounts[id]:{};
-  document.getElementById('m_acctype').value   =a.accType||'broker';
-  var brokerSel   = document.getElementById('m_broker');
-  var brokerOther = document.getElementById('m_broker_other');
+  document.getElementById('m_acctype').value=a.accType||'broker';
+  var brokerSel=document.getElementById('m_broker');
+  var brokerOther=document.getElementById('m_broker_other');
   var knownBrokers=['Zebu','Shoonya','Jainam','IIFL','Zerodha','AliceBlue','Upstox','SBI','HDFC','ICICI','Axis','Kotak',''];
   if(a.broker && !knownBrokers.includes(a.broker)){
     brokerSel.value='__other__'; brokerOther.style.display='block'; brokerOther.value=a.broker;
@@ -1680,21 +1784,18 @@ function openModal(id){
   document.getElementById('m_capital').value =a.capital||'';
   document.getElementById('m_mincash').value =a.minCash||'';
   document.getElementById('m_system').value  =a.system||'';
-  
   var container = document.getElementById('m_combinations');
   container.innerHTML='';
   if(a.combinations&&a.combinations.length){
     a.combinations.forEach(c=>addCombination(c.sysName||'',c.index||'',c.trade||'',c.pct||''));
   } else if(a.indexType||a.tradeStyle){
     addCombination('',a.indexType||'', a.tradeStyle||'', 100);
-  } else {
-    addCombination();
-  }
+  } else { addCombination(); }
   toggleAccType();
   document.getElementById('modalBg').classList.add('open');
 }
 
-function closeModal(){document.getElementById('modalBg').classList.remove('open');editId=null;}
+function closeModal(){ document.getElementById('modalBg').classList.remove('open'); editId=null; }
 
 async function saveAccount(){
   var accType   =document.getElementById('m_acctype').value;
@@ -1706,46 +1807,46 @@ async function saveAccount(){
   var minCash   =accType==='broker'?(parseFloat(document.getElementById('m_mincash').value)||0):0;
   var sys       =accType==='broker'?document.getElementById('m_system').value.trim():'';
   var combinations=accType==='broker'?getCombinations():[];
-  if(!broker||!nick){toast('Name and Nickname are required',true);return;}
+  if(!broker||!nick){ toast('Name and Nickname are required',true); return; }
   var obj={accType,broker,clientId:cid,nickname:nick,capital:cap,minCash,combinations,system:sys,updAt:Date.now()};
   try{
-    if(editId){await db.ref('margin/accounts/'+editId).update(obj);toast('Updated ✓');}
-    else{await db.ref('margin/accounts').push(obj);toast('Account added ✓');}
+    if(editId){ await db.ref('margin/accounts/'+editId).update(obj); toast('Updated ✓'); }
+    else { await db.ref('margin/accounts').push(obj); toast('Account added ✓'); }
     closeModal();
-  }catch(e){toast('Error: '+e.message,true);}
+  }catch(e){ toast('Error: '+e.message,true); }
 }
 
 async function delAccount(id){
   if(!confirm('Delete this account?')) return;
-  try{await db.ref('margin/accounts/'+id).remove();toast('Deleted');}
-  catch(e){toast('Error: '+e.message,true);}
+  try{ await db.ref('margin/accounts/'+id).remove(); toast('Deleted'); }
+  catch(e){ toast('Error: '+e.message,true); }
 }
 
 async function deleteOldData(){
   var before=document.getElementById('delBefore').value;
-  if(!before){toast('Select a date first',true);return;}
+  if(!before){ toast('Select a date first',true); return; }
   if(!confirm('Delete all daily entries before '+fmtDate(before)+'?')) return;
   try{
     var snap=await db.ref('margin/daily').once('value');
     var raw=snap.val()||{};
     var beforeKey=before.replace(/-/g,'');
     var toDelete=Object.keys(raw).filter(k=>k<beforeKey&&k!=='_totals');
-    if(!toDelete.length){toast('No entries found before that date');return;}
+    if(!toDelete.length){ toast('No entries found before that date'); return; }
     var updates={};
     toDelete.forEach(k=>updates['margin/daily/'+k]=null);
     await db.ref().update(updates);
     toast(toDelete.length+' day(s) deleted ✓');
-  }catch(e){toast('Error: '+e.message,true);}
+  }catch(e){ toast('Error: '+e.message,true); }
 }
 
 async function deleteAllData(){
   if(!confirm('⚠️ Delete ALL history? Cannot be undone.')) return;
   if(!confirm('Absolutely sure? All daily history will be permanently deleted.')) return;
-  try{await db.ref('margin/daily').remove();toast('All history deleted');}
-  catch(e){toast('Error: '+e.message,true);}
+  try{ await db.ref('margin/daily').remove(); toast('All history deleted'); }
+  catch(e){ toast('Error: '+e.message,true); }
 }
 
-// ══ POSITION ALLOCATION SLICING SYSTEMS ══
+// ══ POSITION SLICING ══
 function renderSlicing(){
   var list=Object.entries(accounts);
   if(!list.length){
@@ -1753,99 +1854,47 @@ function renderSlicing(){
       var el=document.getElementById('pie-'+k);
       if(el) el.innerHTML=`<div class="pie-title">${k==='accounts'?'By Account':k==='index'?'By Index Type':'By Trade Style'}</div>
         <div class="empty" style="padding:30px 10px"><i class="ti ti-chart-pie"></i><h3>No accounts</h3><p>Add accounts in Settings</p></div>`;
-    });
-    return;
+    }); return;
   }
-
   var accData=list.map(([id,a])=>{
     var e=latestPerAccount[id]||{};
     var am=(parseFloat(e.cash)||0)+(parseFloat(e.collateralEquity)||0)+(parseFloat(e.collateralLiquid)||0);
     return{id,name:a.broker+' — '+(a.nickname||''),combinations:a.combinations||[],am};
   }).filter(d=>d.am>0);
-
   if(!accData.length){
-    ['accounts','index','trade'].forEach(k=>{
-      document.getElementById('legend-'+k).innerHTML='<div style="text-align:center;color:var(--text3);font-size:12px;padding:10px">No data yet — enter margin values first</div>';
-    });
+    ['accounts','index','trade'].forEach(k=>{ document.getElementById('legend-'+k).innerHTML='<div style="text-align:center;color:var(--text3);font-size:12px;padding:10px">No data yet — enter margin values first</div>'; });
     return;
   }
-
   accData.sort((a,b) => b.am - a.am);
-
   var total=accData.reduce((s,d)=>s+d.am,0);
-
   drawPie('chart-accounts','legend-accounts', accData.map(d=>({label:d.name, value:d.am})), total);
-
   var byIndex={};
-  accData.forEach(d=>{
-    if(d.combinations.length){
-      d.combinations.forEach(c=>{
-        var key=c.index||'Unassigned';
-        byIndex[key]=(byIndex[key]||0)+d.am*(c.pct/100);
-      });
-    } else {
-      byIndex['Unassigned']=(byIndex['Unassigned']||0)+d.am;
-    }
-  });
-  var idxArr = Object.entries(byIndex).map(([k,v])=>({label:k,value:v})).sort((a,b)=>b.value-a.value);
-  drawPie('chart-index','legend-index', idxArr, total);
-
+  accData.forEach(d=>{ if(d.combinations.length){ d.combinations.forEach(c=>{ var key=c.index||'Unassigned'; byIndex[key]=(byIndex[key]||0)+d.am*(c.pct/100); }); } else { byIndex['Unassigned']=(byIndex['Unassigned']||0)+d.am; } });
+  drawPie('chart-index','legend-index', Object.entries(byIndex).map(([k,v])=>({label:k,value:v})).sort((a,b)=>b.value-a.value), total);
   var byTrade={};
-  accData.forEach(d=>{
-    if(d.combinations.length){
-      d.combinations.forEach(c=>{
-        var key=c.trade||'Unassigned';
-        byTrade[key]=(byTrade[key]||0)+d.am*(c.pct/100);
-      });
-    } else {
-      byTrade['Unassigned']=(byTrade['Unassigned']||0)+d.am;
-    }
-  });
-  var trdArr = Object.entries(byTrade).map(([k,v])=>({label:k,value:v})).sort((a,b)=>b.value-a.value);
-  drawPie('chart-trade','legend-trade', trdArr, total);
+  accData.forEach(d=>{ if(d.combinations.length){ d.combinations.forEach(c=>{ var key=c.trade||'Unassigned'; byTrade[key]=(byTrade[key]||0)+d.am*(c.pct/100); }); } else { byTrade['Unassigned']=(byTrade['Unassigned']||0)+d.am; } });
+  drawPie('chart-trade','legend-trade', Object.entries(byTrade).map(([k,v])=>({label:k,value:v})).sort((a,b)=>b.value-a.value), total);
 }
 
 function drawPie(canvasId, legendId, data, total){
-  var canvas=document.getElementById(canvasId);
-  if(!canvas) return;
-
-  if(chartInstances[canvasId]){
-    chartInstances[canvasId].destroy();
-    delete chartInstances[canvasId];
-  }
-
+  var canvas=document.getElementById(canvasId); if(!canvas) return;
+  if(chartInstances[canvasId]){ chartInstances[canvasId].destroy(); delete chartInstances[canvasId]; }
   var colors=data.map((_,i)=>PIE_COLORS[i%PIE_COLORS.length]);
   var ctx=canvas.getContext('2d');
-  var W=canvas.width, H=canvas.height;
-  var cx=W/2, cy=H/2, r=Math.min(W,H)/2-10;
+  var W=canvas.width, H=canvas.height, cx=W/2, cy=H/2, r=Math.min(W,H)/2-10;
   ctx.clearRect(0,0,W,H);
-
   var start=(-Math.PI/2);
   data.forEach((d,i)=>{
     var slice=d.value/total*(2*Math.PI);
-    ctx.beginPath();
-    ctx.moveTo(cx,cy);
-    ctx.arc(cx,cy,r,start,start+slice);
-    ctx.closePath();
-    ctx.fillStyle=colors[i];
-    ctx.fill();
-    ctx.strokeStyle='#fff';
-    ctx.lineWidth=2;
-    ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx,cy); ctx.arc(cx,cy,r,start,start+slice); ctx.closePath();
+    ctx.fillStyle=colors[i]; ctx.fill(); ctx.strokeStyle='#fff'; ctx.lineWidth=2; ctx.stroke();
     start+=slice;
   });
-
-  ctx.beginPath();
-  ctx.arc(cx,cy,r*0.45,0,2*Math.PI);
-  ctx.fillStyle=getComputedStyle(document.documentElement).getPropertyValue('--bg2').trim()||'#fff';
-  ctx.fill();
-
+  ctx.beginPath(); ctx.arc(cx,cy,r*0.45,0,2*Math.PI);
+  ctx.fillStyle=getComputedStyle(document.documentElement).getPropertyValue('--bg2').trim()||'#fff'; ctx.fill();
   ctx.fillStyle=getComputedStyle(document.documentElement).getPropertyValue('--text').trim()||'#1a1d23';
-  ctx.font='bold 15px sans-serif';
-  ctx.textAlign='center';
-  ctx.textBaseline='middle';
+  ctx.font='bold 15px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
   ctx.fillText(shortFmt(total),cx,cy);
-
   var legendEl=document.getElementById(legendId);
   legendEl.innerHTML=data.map((d,i)=>{
     var pct=(d.value/total*100).toFixed(1);
@@ -1854,34 +1903,70 @@ function drawPie(canvasId, legendId, data, total){
         <div class="pie-dot" style="background:${colors[i]}"></div>
         <span class="pie-legend-name">${esc(d.label)}</span>
       </div>
-      <div style="display:flex; align-items:center; gap:12px; flex-shrink:0">
-        <span style="font-variant-numeric:tabular-nums; text-align:right; width:45px; font-weight:600; color:var(--text); font-size:12px">${pct}%</span>
-        <span style="color:var(--border2); font-size:11px">|</span>
-        <span style="font-variant-numeric:tabular-nums; text-align:right; width:75px; font-weight:700; color:var(--blue); font-size:12px">${fmtCrL(d.value)}</span>
+      <div style="display:flex;align-items:center;gap:12px;flex-shrink:0">
+        <span style="font-variant-numeric:tabular-nums;text-align:right;width:45px;font-weight:600;color:var(--text);font-size:12px">${pct}%</span>
+        <span style="color:var(--border2);font-size:11px">|</span>
+        <span style="font-variant-numeric:tabular-nums;text-align:right;width:75px;font-weight:700;color:var(--blue);font-size:12px">${fmtCrL(d.value)}</span>
       </div>
     </div>`;
   }).join('');
-
   chartInstances[canvasId]={destroy:()=>ctx.clearRect(0,0,W,H)};
 }
 
-// ══ ASYNCHRONOUS INITIALIZATION ENGINE ══
-window.addEventListener('DOMContentLoaded', function layoutBootEngine() {
-  try { firebase.initializeApp(FIREBASE_CONFIG); } catch(e) {}
+// ══ FIREBASE DB INIT — called only after auth granted ══
+function startApp(){
+  try{ firebase.initializeApp(FIREBASE_CONFIG); }catch(e){}
   db = firebase.database();
   document.getElementById('topDate').textContent = 'Loading…';
-
-  db.ref('margin/accounts').on('value', snap => {
-    accounts = snap.val() || {};
+  db.ref('margin/accounts').on('value', snap=>{
+    accounts = snap.val()||{};
     renderAccList();
     populateHistAccSelect();
-    if(Object.keys(latestPerAccount).length === 0) {
-      loadLatest();
+    if(Object.keys(latestPerAccount).length === 0){ loadLatest(); }
+    else { renderTable(); }
+  });
+}
+
+// ══ BOOT — AUTH GATE ══
+(function boot(){
+  try{ firebase.initializeApp(FIREBASE_CONFIG); }catch(e){}
+
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+
+  firebase.auth().onAuthStateChanged(function(user){
+    if(user){
+      var email = user.email;
+      // Permanent admin — always allowed
+      if(email === PERMANENT_ADMIN){ grantAccess(email); return; }
+      // Others — check allowed_emails in Firebase
+      firebase.database().ref('allowed_emails').once('value').then(function(snap){
+        var data = snap.val()||{};
+        var ok = Object.values(data).some(function(e){ return e === email; });
+        if(ok){
+          grantAccess(email);
+        } else {
+          firebase.auth().signOut();
+          var errEl = document.getElementById('loginError');
+          if(errEl){ errEl.textContent = '⛔ Access denied for '+email+'. Contact sivakumar.profit@gmail.com to request access.'; errEl.style.display='block'; }
+          var btn = document.getElementById('googleSignInBtn');
+          if(btn) btn.style.display = 'flex';
+          var sp = document.getElementById('loginSpinner');
+          if(sp) sp.style.display = 'none';
+        }
+      }).catch(function(){
+        firebase.auth().signOut();
+      });
     } else {
-      renderTable();
+      document.getElementById('loginScreen').style.display = 'flex';
+      document.getElementById('app').style.display = 'none';
+      var btn = document.getElementById('googleSignInBtn');
+      if(btn) btn.style.display = 'flex';
+      var sp = document.getElementById('loginSpinner');
+      if(sp) sp.style.display = 'none';
     }
   });
-});
+})();
 </script>
 </body>
 </html>
