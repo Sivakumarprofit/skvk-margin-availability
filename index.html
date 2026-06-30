@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>SKVK Margin Availability v5.5</title>
+<title>SKVK Margin Availability v5.6</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.34.0/dist/tabler-icons.min.css">
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
@@ -453,7 +453,7 @@ select.cell-input{cursor:pointer; appearance:none; padding:0; height:28px;}
       <div class="brand">
         <i class="ti ti-chart-candle" style="font-size:22px"></i>
         SKVK <span class="accent">Margin Availability</span>
-        <span class="vbadge">v5.5</span>
+        <span class="vbadge">v5.6</span>
       </div>
     </div>
     <div class="topbar-right">
@@ -2363,7 +2363,7 @@ async function saveAccBasketAllocation(){
   }catch(e){ toast('Error: '+e.message, true); }
 }
 
-
+function renderSlicing(){
   var list=Object.entries(accounts);
   if(!list.length){
     ['accounts','index','trade'].forEach(k=>{
