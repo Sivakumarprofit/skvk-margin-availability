@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>SKVK Margin Availability v5.6</title>
+<title>SKVK Margin Availability v5.7</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.34.0/dist/tabler-icons.min.css">
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
@@ -453,7 +453,7 @@ select.cell-input{cursor:pointer; appearance:none; padding:0; height:28px;}
       <div class="brand">
         <i class="ti ti-chart-candle" style="font-size:22px"></i>
         SKVK <span class="accent">Margin Availability</span>
-        <span class="vbadge">v5.6</span>
+        <span class="vbadge">v5.7</span>
       </div>
     </div>
     <div class="topbar-right">
@@ -595,13 +595,14 @@ select.cell-input{cursor:pointer; appearance:none; padding:0; height:28px;}
           <thead>
             <tr>
               <th style="width:40px">S.No</th>
-              <th style="width:180px">Basket Name</th>
+              <th style="width:170px">Basket Name</th>
               <th>Instrument Allocation</th>
+              <th>Trade Style Allocation</th>
               <th style="width:80px"></th>
             </tr>
           </thead>
           <tbody id="basketBody">
-            <tr><td colspan="4" style="text-align:center;padding:24px;color:var(--text2)">
+            <tr><td colspan="5" style="text-align:center;padding:24px;color:var(--text2)">
               <i class="ti ti-refresh spin"></i> Loading…</td></tr>
           </tbody>
         </table>
@@ -941,19 +942,29 @@ select.cell-input{cursor:pointer; appearance:none; padding:0; height:28px;}
 
 <!-- Add/Edit Basket Modal -->
 <div class="modal-bg" id="basketModalBg">
-  <div class="modal">
+  <div class="modal wide">
     <h3 id="basketModalTitle"><i class="ti ti-shopping-cart" style="color:var(--navy)"></i> Add Basket</h3>
     <div class="mf full"><label>Basket Name *</label>
       <input type="text" id="bk_name" placeholder="e.g. Basket A" maxlength="30"
         style="height:36px;padding:0 10px;border-radius:var(--r);border:1px solid var(--border2);
                background:var(--bg);color:var(--text);font-size:13px;font-family:inherit;width:100%"></div>
-    <div class="mf full" style="margin-top:12px">
-      <label>Instrument Allocation <span style="font-size:10px;color:var(--text3);font-weight:400">(must total 100%)</span></label>
-      <div id="bk_instruments" style="display:flex;flex-direction:column;gap:8px;margin-top:6px"></div>
-      <button type="button" class="btn sm" onclick="addBasketInstrument()" style="margin-top:8px;align-self:flex-start">
-        <i class="ti ti-plus"></i> Add Instrument
-      </button>
-      <div id="bk_total" style="font-size:12px;margin-top:8px;font-weight:700"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:14px">
+      <div class="mf full">
+        <label>Instrument Allocation <span style="font-size:10px;color:var(--text3);font-weight:400">(must total 100%)</span></label>
+        <div id="bk_instruments" style="display:flex;flex-direction:column;gap:8px;margin-top:6px"></div>
+        <button type="button" class="btn sm" onclick="addBasketInstrument()" style="margin-top:8px;align-self:flex-start">
+          <i class="ti ti-plus"></i> Add Instrument
+        </button>
+        <div id="bk_total" style="font-size:12px;margin-top:8px;font-weight:700"></div>
+      </div>
+      <div class="mf full">
+        <label>Trade Style Allocation <span style="font-size:10px;color:var(--text3);font-weight:400">(must total 100%)</span></label>
+        <div id="bk_tradestyles" style="display:flex;flex-direction:column;gap:8px;margin-top:6px"></div>
+        <button type="button" class="btn sm" onclick="addBasketTradeStyle()" style="margin-top:8px;align-self:flex-start">
+          <i class="ti ti-plus"></i> Add Trade Style
+        </button>
+        <div id="bk_ts_total" style="font-size:12px;margin-top:8px;font-weight:700"></div>
+      </div>
     </div>
     <div class="mfooter">
       <button class="btn" onclick="closeBasketModal()">Cancel</button>
@@ -2147,17 +2158,19 @@ function renderBasketTable(){
   if(!tb) return;
   var list = Object.entries(baskets);
   if(!list.length){
-    tb.innerHTML = `<tr><td colspan="4"><div class="empty">
+    tb.innerHTML = `<tr><td colspan="5"><div class="empty">
       <i class="ti ti-shopping-cart"></i><h3>No baskets yet</h3>
       <p>Click <strong>Add Basket</strong> to create one.</p></div></td></tr>`;
     return;
   }
   tb.innerHTML = list.map(([id,b],i)=>{
     var instTxt = (b.instruments||[]).map(ins=>esc(ins.name)+' '+(parseFloat(ins.pct)||0)+'%').join(' · ');
+    var tsTxt   = (b.tradeStyles||[]).map(ts=>esc(ts.name)+' '+(parseFloat(ts.pct)||0)+'%').join(' · ');
     return `<tr>
       <td style="color:var(--text3);font-size:11px">${i+1}</td>
       <td style="font-weight:700">${esc(b.name||'—')}</td>
       <td style="font-size:12px;color:var(--text2)">${instTxt||'<span style="color:var(--text3)">— No instruments —</span>'}</td>
+      <td style="font-size:12px;color:var(--text2)">${tsTxt||'<span style="color:var(--text3)">— Not configured —</span>'}</td>
       <td class="c">
         <div style="display:flex;gap:4px;justify-content:center">
           <button class="btn sm" onclick="openBasketModal('${id}')" title="Edit"><i class="ti ti-edit"></i></button>
@@ -2209,6 +2222,48 @@ function getBasketInstruments(){
   return arr;
 }
 
+// ── Trade Style Allocation (per basket) ──
+function addBasketTradeStyle(name='', pct=''){
+  var container = document.getElementById('bk_tradestyles');
+  var row = document.createElement('div');
+  row.style.cssText = 'display:flex;align-items:center;gap:6px';
+  row.innerHTML = `
+    <input type="text" placeholder="Style (e.g. INTRA)" value="${esc(name)}" maxlength="20"
+      style="height:34px;padding:0 8px;border-radius:var(--r);border:1px solid var(--border2);
+             background:var(--bg2);color:var(--text);font-size:12px;font-family:inherit;flex:1"
+      class="bk-ts-name" oninput="updateBasketTsTotal()">
+    <input type="number" placeholder="%" min="0" max="100" value="${pct}"
+      style="height:34px;padding:0 8px;border-radius:var(--r);border:1px solid var(--border2);
+             background:var(--bg2);color:var(--text);font-size:12px;font-family:inherit;width:75px"
+      class="bk-ts-pct" oninput="updateBasketTsTotal()">
+    <button type="button" onclick="this.parentElement.remove();updateBasketTsTotal()"
+      style="height:34px;width:34px;border-radius:var(--r);border:1px solid var(--red);
+             background:none;color:var(--red);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+      <i class="ti ti-x"></i>
+    </button>`;
+  container.appendChild(row);
+  updateBasketTsTotal();
+}
+
+function updateBasketTsTotal(){
+  var pcts = Array.from(document.querySelectorAll('.bk-ts-pct')).map(i=>parseFloat(i.value)||0);
+  var total = pcts.reduce((s,v)=>s+v,0);
+  var el = document.getElementById('bk_ts_total'); if(!el) return;
+  el.textContent = 'Total: '+total+'%';
+  el.style.color = total===100 ? 'var(--green)' : 'var(--red)';
+}
+
+function getBasketTradeStyles(){
+  var rows = document.getElementById('bk_tradestyles').children;
+  var arr = [];
+  Array.from(rows).forEach(row=>{
+    var name = row.querySelector('.bk-ts-name')?.value.trim()||'';
+    var pct  = parseFloat(row.querySelector('.bk-ts-pct')?.value)||0;
+    if(name) arr.push({name, pct});
+  });
+  return arr;
+}
+
 function openBasketModal(id){
   editBasketId = id||null;
   document.getElementById('basketModalTitle').innerHTML =
@@ -2222,6 +2277,13 @@ function openBasketModal(id){
   } else {
     addBasketInstrument();
   }
+  var tsContainer = document.getElementById('bk_tradestyles');
+  tsContainer.innerHTML = '';
+  if(b.tradeStyles && b.tradeStyles.length){
+    b.tradeStyles.forEach(ts=>addBasketTradeStyle(ts.name, ts.pct));
+  } else {
+    addBasketTradeStyle();
+  }
   document.getElementById('basketModalBg').classList.add('open');
 }
 
@@ -2233,11 +2295,15 @@ function closeBasketModal(){
 async function saveBasket(){
   var name = document.getElementById('bk_name').value.trim();
   var instruments = getBasketInstruments();
+  var tradeStyles = getBasketTradeStyles();
   if(!name){ toast('Basket name is required', true); return; }
   if(!instruments.length){ toast('Add at least one instrument', true); return; }
   var total = instruments.reduce((s,i)=>s+(parseFloat(i.pct)||0),0);
   if(total!==100){ toast('Instrument allocation must total 100% (currently '+total+'%)', true); return; }
-  var obj = { name, instruments, updAt: Date.now() };
+  if(!tradeStyles.length){ toast('Add at least one trade style', true); return; }
+  var tsTotal = tradeStyles.reduce((s,t)=>s+(parseFloat(t.pct)||0),0);
+  if(tsTotal!==100){ toast('Trade style allocation must total 100% (currently '+tsTotal+'%)', true); return; }
+  var obj = { name, instruments, tradeStyles, updAt: Date.now() };
   try{
     if(editBasketId){ await db.ref('margin/baskets/'+editBasketId).update(obj); toast('Basket updated ✓'); }
     else{ await db.ref('margin/baskets').push(obj); toast('Basket added ✓'); }
@@ -2390,17 +2456,13 @@ function renderSlicing(){
   // ── Pie 2: By Instrument (deployed capital × basket% × instrument%) ──
   renderInstrumentPie();
 
-  // ── Pie 3: By Trade Style — UNCHANGED ──
-  var byTrade={};
-  accData.forEach(d=>{ if(d.combinations.length){ d.combinations.forEach(c=>{ var key=c.trade||'Unassigned'; byTrade[key]=(byTrade[key]||0)+d.am*(c.pct/100); }); } else { byTrade['Unassigned']=(byTrade['Unassigned']||0)+d.am; } });
-  drawPie('chart-trade','legend-trade', Object.entries(byTrade).map(([k,v])=>({label:k,value:v})).sort((a,b)=>b.value-a.value), total);
+  // ── Pie 3: By Trade Style (deployed capital × basket% × tradeStyle%) ──
+  renderTradeStylePie();
 }
 
-// ══ INSTRUMENT PIE (2nd chart) — driven by Baskets + Account-Basket Allocation ══
-function renderInstrumentPie(){
+// ══ Shared: Deployed Capital per broker account ══
+function getDeployedByAccount(){
   var brokerAccs = Object.entries(accounts).filter(([id,a])=>a.accType!=='bank');
-
-  // Deployed capital per account: Cap.Req 1 Lot (₹L) × No. of Lots × Cap.Alloc%
   var deployedByAcc = {};
   var totalDeployed = 0;
   brokerAccs.forEach(([id,a])=>{
@@ -2411,32 +2473,41 @@ function renderInstrumentPie(){
     var deployedRs = (capPerLotL*100000) * noLots * (allocPct/100);
     if(deployedRs>0){ deployedByAcc[id]=deployedRs; totalDeployed+=deployedRs; }
   });
+  return { deployedByAcc, totalDeployed };
+}
 
-  var byInstrument = {};
-  if(totalDeployed>0){
-    Object.entries(deployedByAcc).forEach(([accId,deployedRs])=>{
-      var abEntry = accountBaskets[accId];
-      var basketAllocs = (abEntry && abEntry.baskets) ? abEntry.baskets : [];
-      if(!basketAllocs.length){
-        byInstrument['Unassigned'] = (byInstrument['Unassigned']||0) + deployedRs;
+// ── Shared: spread deployed capital across baskets, then across a given basket field ──
+// fieldKey = 'instruments' or 'tradeStyles'
+function buildBasketBreakdown(deployedByAcc, fieldKey){
+  var byKey = {};
+  Object.entries(deployedByAcc).forEach(([accId,deployedRs])=>{
+    var abEntry = accountBaskets[accId];
+    var basketAllocs = (abEntry && abEntry.baskets) ? abEntry.baskets : [];
+    if(!basketAllocs.length){
+      byKey['Unassigned'] = (byKey['Unassigned']||0) + deployedRs;
+      return;
+    }
+    basketAllocs.forEach(ba=>{
+      var basket = baskets[ba.basketId];
+      var basketShare = deployedRs * ((parseFloat(ba.pct)||0)/100);
+      var items = basket ? (basket[fieldKey]||[]) : [];
+      if(!items.length){
+        byKey['Unassigned'] = (byKey['Unassigned']||0) + basketShare;
         return;
       }
-      basketAllocs.forEach(ba=>{
-        var basket = baskets[ba.basketId];
-        var basketShare = deployedRs * ((parseFloat(ba.pct)||0)/100);
-        if(!basket || !basket.instruments || !basket.instruments.length){
-          byInstrument['Unassigned'] = (byInstrument['Unassigned']||0) + basketShare;
-          return;
-        }
-        basket.instruments.forEach(ins=>{
-          var key = ins.name||'Unassigned';
-          var insShare = basketShare * ((parseFloat(ins.pct)||0)/100);
-          byInstrument[key] = (byInstrument[key]||0) + insShare;
-        });
+      items.forEach(it=>{
+        var key = it.name||'Unassigned';
+        var share = basketShare * ((parseFloat(it.pct)||0)/100);
+        byKey[key] = (byKey[key]||0) + share;
       });
     });
-  }
+  });
+  return byKey;
+}
 
+// ══ INSTRUMENT PIE (2nd chart) — driven by Baskets + Account-Basket Allocation ══
+function renderInstrumentPie(){
+  var { deployedByAcc, totalDeployed } = getDeployedByAccount();
   var pieEl = document.getElementById('pie-index');
   if(totalDeployed<=0){
     if(pieEl){
@@ -2446,8 +2517,26 @@ function renderInstrumentPie(){
     drawPie('chart-index','legend-index', [], 1, 0);
     return;
   }
+  var byInstrument = buildBasketBreakdown(deployedByAcc, 'instruments');
   var data = Object.entries(byInstrument).map(([k,v])=>({label:k,value:v})).sort((a,b)=>b.value-a.value);
   drawPie('chart-index','legend-index', data, totalDeployed, totalDeployed);
+}
+
+// ══ TRADE STYLE PIE (3rd chart) — driven by Baskets + Account-Basket Allocation ══
+function renderTradeStylePie(){
+  var { deployedByAcc, totalDeployed } = getDeployedByAccount();
+  var pieEl = document.getElementById('pie-trade');
+  if(totalDeployed<=0){
+    if(pieEl){
+      document.getElementById('legend-trade').innerHTML =
+        '<div style="text-align:center;color:var(--text3);font-size:12px;padding:10px">No deployed capital yet — set Cap.Req/Lots/Alloc% in Funds Dashboard</div>';
+    }
+    drawPie('chart-trade','legend-trade', [], 1, 0);
+    return;
+  }
+  var byTrade = buildBasketBreakdown(deployedByAcc, 'tradeStyles');
+  var data = Object.entries(byTrade).map(([k,v])=>({label:k,value:v})).sort((a,b)=>b.value-a.value);
+  drawPie('chart-trade','legend-trade', data, totalDeployed, totalDeployed);
 }
 
 function drawPie(canvasId, legendId, data, total, displayTotal){
